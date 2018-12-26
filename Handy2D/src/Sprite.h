@@ -80,6 +80,8 @@ private:
 
 struct _TTF_Font;
 
+
+
 class CTextSprite : public CSprite
 {
 public:
@@ -88,16 +90,21 @@ public:
 	virtual void Render(const CRenderLayer& Layer);
 	virtual void SetTexture(std::weak_ptr<CTexture> pTexture) {}; //not used
 
-	void SetText(std::string sText) { m_sText = sText; }
+	void SetText(const std::string& sText) { m_sText = sText; }
 	std::string GetText() { return m_sText; }
 	void SetColor(Color sColor) { m_Color = sColor; }
 	Color GetColor() { return m_Color; }
-
+	void SetFont(const std::string& sFont, int nSize);
+	void SetAlignX(float fAlign) { m_fAlignX = fAlign; }
+	void SetAlignY(float fAlign) { m_fAlignY = fAlign; }
 private:
 	std::string m_sText, m_sLastText;
+	std::string m_sFont;
+	int m_nFontSize = 12;
 	Vec m_TextSize;
 	bool m_bCreateError = false;
 	Color m_Color = { 0,0,0,0 };
 	SDL_Texture* m_pTextTexture = nullptr;
 	_TTF_Font* m_pFont = nullptr;
+	float m_fAlignX = 0.0f, m_fAlignY = 0.0f;
 };

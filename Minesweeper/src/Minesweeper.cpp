@@ -23,6 +23,8 @@ class CTestGame : public CGameLogic
 	std::vector<ETileState> tiles;
 	std::vector<CGuiImage*> aImages;
 
+	CGuiText* m_pText;
+
 	int nSizeX = 20, nSizeY = 15;
 
 	int CountMines(int x, int y)
@@ -206,12 +208,22 @@ class CTestGame : public CGameLogic
 
 		UpdateTiles();
 
+		m_pText = new CGuiText();
+		m_pText->SetFont("corbel.ttf", 16);
+		m_pText->SetPosition(IntVec(10,10));
+		m_pText->SetSize(IntVec(300, 30));
+		m_pText->SetAlign(EHA_Right, EVA_Bottom);
+		pGui->GetRootElement()->AddChild(m_pText);
+		m_pText->SetText("subidubidu");
+
 		return true;
 	}
 
 	virtual void Update()
 	{
-
+		std::string sText = "Time: ";
+		sText += std::to_string((int)(Time::full));
+		m_pText->SetText(sText);
 	}
 };
 

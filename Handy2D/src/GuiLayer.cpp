@@ -2,6 +2,7 @@
 #include "Input.h"
 #include "SDL.h"
 
+
 CGuiElement::CGuiElement() :
 	m_vPosition(0, 0), m_vSize(-1, -1) {};
 
@@ -183,4 +184,83 @@ void CGuiImage::Render()
 
 	m_pSprite->SetSize(m_vUsedSize);
 	m_pLayer->AddRenderData(m_pSprite,this);
+}
+
+
+CGuiText::CGuiText() : CGuiElement()
+{
+	m_vSize = IntVec(-1, -1);
+	m_pSprite = std::make_shared<CTextSprite>();
+};
+
+
+void CGuiText::SetText(const std::string& sText)
+{
+	m_sText = sText;
+	m_pSprite->SetText(sText);
+}
+
+void CGuiText::SetSize(const IntVec& size)
+{
+	m_vSize = size;
+}
+
+void CGuiText::CheckValidity()
+{
+	if (m_vSize.x > 0 && m_vSize.y > 0 && m_sText.size() > 0 && m_sFont.size() > 0)
+	{
+		m_eValid = EValidity::EValid;
+	}
+	else
+	{
+		m_eValid = EValidity::EInvalid;
+	}
+}
+
+void CGuiText::SetFont(const std::string& sFont, int nFontSize)
+{
+	m_sFont = sFont;
+	m_nFontSize = nFontSize;
+	m_pSprite->SetFont(sFont, nFontSize);
+}
+
+void CGuiText::Render()
+{
+	if (!m_pSprite) return;
+
+	if (m_eValid == EUnknown)
+	{
+		CheckValidity();
+	}
+
+	if (m_eValid == EInvalid) return;
+
+	m_pSprite->SetPos(m_vPosition);
+	m_pSprite->SetSize(m_vSize);
+	m_pLayer->AddRenderData(m_pSprite, this);
+}
+
+void CGuiText::SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign)
+{
+	m_eHAlign = eHAlign;
+	m_eVAlign = eVAlign;
+	float f;
+
+	switch (m_eHAlign)
+	{
+	case EHA_Left: f = 0.0f;
+	case EHA_Center: f = 0.5f;
+	case EHA_Right: f = 1.0f;		
+	}
+
+	m_pSprite->SetAlignX(f);
+
+	switch (m_eVAlign)
+	{
+	case EVA_Bottom: f = 1.0f;
+	case EVA_Center: f = 0.5f;
+	case EVA_Top: f = 0.0f;
+	}
+
+	m_pSprite->SetAlignY(f);
 }

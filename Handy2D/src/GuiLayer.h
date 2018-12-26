@@ -30,8 +30,10 @@ public:
 	std::vector<CGuiElement*>& GetChildren() { return m_aChildren; }
 
 	void AddChild(CGuiElement* elem);
-	void SetPosition(const IntVec& pos) { m_vPosition = pos; }
-	IntVec GetPosition() { return m_vPosition; }
+	virtual void SetPosition(const IntVec& pos) { m_vPosition = pos; }
+	IntVec GetPosition() const { return m_vPosition; }
+	virtual void SetSize(const IntVec& size) { m_vSize = size; }
+	IntVec GetSize() const { return m_vSize; }
 
 	virtual void Render();
 	void SetLayer(CGuiLayer* pLayer) { m_pLayer = pLayer; }
@@ -77,6 +79,41 @@ private:
 	EValidity m_eValid = EUnknown;
 
 	IntVec m_vUsedSize;
+};
+
+enum EHorizontalAlign {
+	EHA_Left,
+	EHA_Center,
+	EHA_Right
+};
+
+enum EVerticalAlign {
+	EVA_Top,
+	EVA_Center,
+	EVA_Bottom
+};
+
+class CGuiText : public CGuiElement
+{
+public:
+	CGuiText();
+	void SetText(const std::string& sText);
+	void SetFont(const std::string& sFont, int nFontSize);
+	virtual void SetSize(const IntVec& size) override;
+	virtual void Render();
+	void SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign);
+private:
+
+	void CheckValidity();
+
+	std::string m_sText;
+	std::string m_sFont;
+	int m_nFontSize = 8;
+	std::shared_ptr<CTextSprite> m_pSprite;
+	EHorizontalAlign m_eHAlign = EHA_Center;
+	EVerticalAlign m_eVAlign = EVA_Center;
+
+	EValidity m_eValid = EUnknown;
 };
 
 

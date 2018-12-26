@@ -2,6 +2,7 @@
 #include "SDL_ttf.h"
 #include "Sprite.h"
 #include "SDLManager.h"
+#include "Font.h"
 
 
 //CSprite
@@ -97,7 +98,7 @@ void CTextSprite::Render(const CRenderLayer & Layer)
 
 	if (!m_pTextTexture || m_sLastText != m_sText)
 	{
-		SDL_Surface* pSurface = TTF_RenderText_Solid(m_pFont, m_sText.c_str(), m_Color);
+		SDL_Surface* pSurface = TTF_RenderText_Blended(m_pFont, m_sText.c_str(), m_Color);
 		if (pSurface)
 		{
 			m_TextSize.x = (float) pSurface->w;
@@ -120,12 +121,12 @@ void CTextSprite::Render(const CRenderLayer & Layer)
 	//majd kesobb lehetne tobb align
 	if (Rect.w > m_TextSize.x)
 	{
-		Rect.x += (int) (m_TextSize.x / 2);
+		Rect.x += (int) (Rect.w - m_TextSize.x) * m_fAlignX;
 		Rect.w = (int) m_TextSize.x;
 	}
 	if (Rect.h > m_TextSize.y)
 	{
-		Rect.y += (int) (m_TextSize.y / 2);
+		Rect.y += (int)(Rect.h - m_TextSize.y) * m_fAlignY;
 		Rect.h = (int) m_TextSize.y;
 	}
 	SDL_RenderCopy(SDLManager::Instance.GetRenderer(), m_pTextTexture, nullptr, &Rect);
@@ -135,4 +136,11 @@ void CTextSprite::Render(const CRenderLayer & Layer)
 CTextSprite::~CTextSprite()
 {
 	SDL_DestroyTexture(m_pTextTexture);
+}
+
+void CTextSprite::SetFont(const std::string& sFont, int nFontSize)
+{
+	m_sFont = sFont;
+	m_nFontSize = nFontSize;
+	m_pFont = FontCache::Instance.GetFont(sFont, nFontSize);
 }
