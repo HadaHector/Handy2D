@@ -264,3 +264,59 @@ void CGuiText::SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign)
 
 	m_pSprite->SetAlignY(f);
 }
+
+void CGuiText::SetColor(Color color)
+{
+	m_Color = color;
+	m_pSprite->SetColor(color);
+}
+
+
+CGuiTextbox::CGuiTextbox()
+{
+	m_vSize = IntVec(10, 10);
+	m_pSprite = std::make_shared<CTextboxSprite>();
+}
+
+void CGuiTextbox::Render()
+{
+	if (!m_pSprite) return;
+
+	m_pSprite->SetPos(m_vPosition);
+	m_pSprite->SetSize(m_vSize);
+	m_pLayer->AddRenderData(m_pSprite, this);
+}
+
+
+void CGuiTextbox::AddBlock(const STextBlock& Block)
+{
+	m_pSprite->AddBlock(Block);
+}
+
+void CGuiTextbox::Clear()
+{
+	m_pSprite->Clear();
+}
+
+void CGuiTextbox::SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign)
+{
+	float f;
+
+	switch (eHAlign)
+	{
+	case EHA_Left: f = 0.0f;
+	case EHA_Center: f = 0.5f;
+	case EHA_Right: f = 1.0f;
+	}
+
+	m_pSprite->SetHAlign(f);
+
+	switch (eVAlign)
+	{
+	case EVA_Bottom: f = 1.0f;
+	case EVA_Center: f = 0.5f;
+	case EVA_Top: f = 0.0f;
+	}
+
+	m_pSprite->SetVAlign(f);
+}

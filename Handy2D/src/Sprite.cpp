@@ -121,12 +121,12 @@ void CTextSprite::Render(const CRenderLayer & Layer)
 	//majd kesobb lehetne tobb align
 	if (Rect.w > m_TextSize.x)
 	{
-		Rect.x += (int) (Rect.w - m_TextSize.x) * m_fAlignX;
+		Rect.x += (int) ((Rect.w - m_TextSize.x) * m_fAlignX);
 		Rect.w = (int) m_TextSize.x;
 	}
 	if (Rect.h > m_TextSize.y)
 	{
-		Rect.y += (int)(Rect.h - m_TextSize.y) * m_fAlignY;
+		Rect.y += (int)((Rect.h - m_TextSize.y) * m_fAlignY);
 		Rect.h = (int) m_TextSize.y;
 	}
 	SDL_RenderCopy(SDLManager::Instance.GetRenderer(), m_pTextTexture, nullptr, &Rect);
@@ -142,5 +142,5 @@ void CTextSprite::SetFont(const std::string& sFont, int nFontSize)
 {
 	m_sFont = sFont;
 	m_nFontSize = nFontSize;
-	m_pFont = FontCache::Instance.GetFont(sFont, nFontSize);
+	m_pFont = FontCache::Instance.GetFont(sFont, nFontSize)->m_pFont;
 }

@@ -1,6 +1,8 @@
 #include "Font.h"
 #include "SDL_ttf.h"
 #include <assert.h>
+#include "sdlmanager.h"
+#include <cctype>
 
 #if defined(_WIN32) || defined(_WIN64)
 #define WINVER 0x0600
@@ -18,7 +20,7 @@ bool fexists(const char *filename) {
 
 FontCache FontCache::Instance;
 
-_TTF_Font* FontCache::GetFont(const std::string& sFont, int nSize)
+FontDesc* FontCache::GetFont(const std::string& sFont, int nSize)
 {
 	auto it = m_mFonts.find(sFont);
 	if (it != m_mFonts.end())
@@ -26,7 +28,7 @@ _TTF_Font* FontCache::GetFont(const std::string& sFont, int nSize)
 		auto it2 = it->second.find(nSize);
 		if (it2 != it->second.end())
 		{
-			return it2->second.m_pFont;
+			return &it2->second;
 		}
 	}
 	
@@ -68,9 +70,12 @@ _TTF_Font* FontCache::GetFont(const std::string& sFont, int nSize)
 		printf("Font loaded: %s %d \n", sFont.c_str(), nSize);
 		FontDesc Desc;
 		Desc.m_pFont = pFont;
-		Desc.m_sFontPath = sPath;
-		it->second.insert(std::make_pair(nSize, Desc));
-		return pFont;
+		Desc.m_sFontPath = sPath;	
+		Desc.m_nLineSkip = TTF_FontLineSkip(pFont);
+		Desc.m_nAscend = TTF_FontAscent(pFont);
+		Desc.m_nDescend = TTF_FontAscent(pFont);
+		auto it2 = it->second.insert(std::make_pair(nSize, Desc));
+		return &it2.first->second;
 	}
 	else
 	{
@@ -95,3 +100,43 @@ FontCache::~FontCache()
 	//the default destructors for the maps are enough
 }
 
+
+LetterDesc* FontDesc::GetLetter(Uint16 ch)
+{
+	auto it = m_mLetters.find(ch);
+	if (it != m_mLetters.end())
+	{
+		return it->second;
+	}
+
+	LetterDesc* pDesc = new LetterDesc();
+	pDesc->character = ch;
+	pDesc->pFont = this;
+
+	if (std::isspace(ch))
+	{
+		pDesc->bWhiteSpace = true;
+	}
+
+
+	if (!TTF_GlyphIsProvided(m_pFont, ch) && !pDesc->bWhiteSpace)
+	{
+		ch = '?';
+	}
+
+
+	if (TTF_GlyphIsProvided(m_pFont, ch))
+	{
+		TTF_GlyphMetrics(m_pFont, ch, &pDesc->minx, &pDesc->maxx, &pDesc->miny, &pDesc->maxy, &pDesc->advance);
+		Uint16 text[2];
+		text[0] = ch;
+		text[1] = 0;
+
+		SDL_Color c = { 255,255,255, 255 };
+		pDesc->pSurface = TTF_RenderUNICODE_Blended(m_pFont, text, c);
+		pDesc->pTexture = SDL_CreateTextureFromSurface(SDLManager::Instance.GetRenderer(), pDesc->pSurface);
+	}
+
+	m_mLetters.insert(std::make_pair(ch, pDesc));
+	return pDesc;
+}

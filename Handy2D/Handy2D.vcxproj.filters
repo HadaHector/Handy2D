@@ -57,6 +57,9 @@
     <ClInclude Include="src\Keys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\TextboxSprite.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GameObject.cpp">
@@ -96,6 +99,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextboxSprite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

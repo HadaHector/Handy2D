@@ -1,5 +1,6 @@
 #pragma once
 #include "RenderLayer.h"
+#include "TextboxSprite.h"
 #include <functional>
 
 enum class EGuiResizeEffect
@@ -8,6 +9,18 @@ enum class EGuiResizeEffect
 	Up,
 	Down,
 	Both
+};
+
+enum EHorizontalAlign {
+	EHA_Left,
+	EHA_Center,
+	EHA_Right
+};
+
+enum EVerticalAlign {
+	EVA_Top,
+	EVA_Center,
+	EVA_Bottom
 };
 
 class CGuiLayer;
@@ -81,18 +94,6 @@ private:
 	IntVec m_vUsedSize;
 };
 
-enum EHorizontalAlign {
-	EHA_Left,
-	EHA_Center,
-	EHA_Right
-};
-
-enum EVerticalAlign {
-	EVA_Top,
-	EVA_Center,
-	EVA_Bottom
-};
-
 class CGuiText : public CGuiElement
 {
 public:
@@ -102,17 +103,39 @@ public:
 	virtual void SetSize(const IntVec& size) override;
 	virtual void Render();
 	void SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign);
+	void SetColor(Color color);
 private:
 
 	void CheckValidity();
 
 	std::string m_sText;
 	std::string m_sFont;
+	Color m_Color;
 	int m_nFontSize = 8;
 	std::shared_ptr<CTextSprite> m_pSprite;
 	EHorizontalAlign m_eHAlign = EHA_Center;
 	EVerticalAlign m_eVAlign = EVA_Center;
 
+	EValidity m_eValid = EUnknown;
+};
+
+class CGuiTextbox : public CGuiElement
+{
+public:
+	CGuiTextbox();
+	
+	virtual void Render() override;
+	void Clear();
+	void AddBlock(const STextBlock& Block);
+	void SetDynamic(bool d) { m_pSprite->SetDynamic(d); }
+	bool IsDynamic() const { return m_pSprite->IsDynamic(); }
+	void SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign);
+
+private:
+
+	Color m_Color;
+	int m_nFontSize = 8;
+	std::shared_ptr<CTextboxSprite> m_pSprite;
 	EValidity m_eValid = EUnknown;
 };
 

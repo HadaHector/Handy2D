@@ -23,7 +23,7 @@ class CTestGame : public CGameLogic
 	std::vector<ETileState> tiles;
 	std::vector<CGuiImage*> aImages;
 
-	CGuiText* m_pText;
+	CGuiTextbox* m_pText;
 
 	int nSizeX = 20, nSizeY = 15;
 
@@ -208,22 +208,69 @@ class CTestGame : public CGameLogic
 
 		UpdateTiles();
 
-		m_pText = new CGuiText();
-		m_pText->SetFont("corbel.ttf", 16);
-		m_pText->SetPosition(IntVec(10,10));
-		m_pText->SetSize(IntVec(300, 30));
-		m_pText->SetAlign(EHA_Right, EVA_Bottom);
+		m_pText = new CGuiTextbox();
+
+		{
+			STextBlock Block;
+			Block.SetFont("calibrii.ttf");
+			Block.SetFontSize(16);
+			Block.SetColor(Color(255, 0, 0, 0));
+			Block.SetText("Lorem");
+			m_pText->AddBlock(Block);
+		}
+
+		{
+			STextBlock Block;
+			Block.SetFont("calibrii.ttf");
+			Block.SetFontSize(32);
+			Block.SetColor(Color(0, 0, 0, 0));
+			Block.SetText(" ipsum");
+			m_pText->AddBlock(Block);
+		}
+
+		{
+			STextBlock Block;
+			Block.SetFont("arial.ttf");
+			Block.SetFontSize(12);
+			Block.SetColor(Color(0, 0, 0, 0));
+			Block.SetText("dolor sit amet, \n consectetur adipiscing elit. Nam vel vulputate felis. Aliquam erat volutpat.");
+			m_pText->AddBlock(Block);
+		}
+
+		{
+			STextBlock Block;
+			Block.SetFont("arialbd.ttf");
+			Block.SetFontSize(18);
+			Block.SetColor(Color(0, 0, 0, 0));
+			Block.SetText("Sed pretium varius neque, eu luctus diam imperdiet vitae. Pellentesque dignissim nisl id egestas egestas.");
+			m_pText->AddBlock(Block);
+		}
+
+		{
+			STextBlock Block;
+			Block.SetFont("arial.ttf");
+			Block.SetFontSize(12);
+			Block.SetColor(Color(0, 0, 0, 0));
+			Block.SetText(" Nullam fringilla urna nunc, nec lacinia dolor congue sed. Praesent sit amet nulla vitae nisl sodales tincidunt. Sed ut urna non tellus semper suscipit et at urna. Curabitur venenatis enim id purus interdum commodo. Aliquam vel odio sed libero tempor suscipit in eget turpis. Aliquam in nulla vitae velit feugiat maximus eu eget est. Integer scelerisque malesuada sem sit amet condimentum. Curabitur tempor mi vel sem molestie pretium. Sed consectetur risus magna, sed interdum elit ullamcorper a. Aenean id mi lobortis, volutpat ex at, faucibus nisl..");
+			m_pText->AddBlock(Block);
+		}
+
+		m_pText->SetSize(IntVec(500, 500));
+		m_pText->SetPosition(IntVec(100, 100));
 		pGui->GetRootElement()->AddChild(m_pText);
-		m_pText->SetText("subidubidu");
+
 
 		return true;
 	}
 
 	virtual void Update()
 	{
-		std::string sText = "Time: ";
-		sText += std::to_string((int)(Time::full));
-		m_pText->SetText(sText);
+		//std::string sText = "Time: ";
+		//sText += std::to_string((int)(Time::full));
+		if (Input::GetKey(MOUSE_LEFT).released)
+		{
+			m_pText->SetDynamic(!m_pText->IsDynamic());
+		}
 	}
 };
 
