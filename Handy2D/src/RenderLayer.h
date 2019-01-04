@@ -9,21 +9,21 @@ class CRenderLayer
 {
 protected:
 	bool m_bVisible = true;
-	IntRect m_Size;
+	IntRect m_Rect;
 public:
-	CRenderLayer(int x, int y) { m_Size = { 0,0,x,y }; }
+	CRenderLayer(const IntRect& rect) { m_Rect = rect; }
 	virtual ~CRenderLayer() {};
 	virtual void Render() = 0;
 	virtual void HandleEvents() = 0;
 	void SetVisible(bool bVisible) { m_bVisible = bVisible; }
 	bool IsVisible() const { return m_bVisible; }
-	IntRect GetRect() const { return m_Size; }
+	IntRect GetRect() const { return m_Rect; }
 };
 
 class CSpriteRenderLayer : public CRenderLayer
 {
 public:
-	CSpriteRenderLayer(int x, int y) : CRenderLayer(x, y) {};
+	CSpriteRenderLayer(const IntRect& rect) : CRenderLayer(rect) {};
 	virtual ~CSpriteRenderLayer() {};
 
 	virtual void Render() override;

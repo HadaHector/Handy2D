@@ -92,6 +92,20 @@ void SDLManager::Start(SWindowParams params, CGameLogic* pGameLogic)
 	}
 }
 
+void SDLManager::SetWindowSize(IntVec size)
+{
+	SDL_SetWindowSize(Instance.m_pWindow, size.x, size.y);
+}
+void SDLManager::SetWindowMinSize(IntVec size)
+{
+	SDL_SetWindowMinimumSize(Instance.m_pWindow, size.x, size.y);
+}
+void SDLManager::SetWindowMaxSize(IntVec size)
+{
+	SDL_SetWindowMaximumSize(Instance.m_pWindow, size.x, size.y);
+}
+
+
 bool SDLManager::Init()
 {
 
@@ -105,6 +119,7 @@ bool SDLManager::Init()
 		if (m_WindowParams.bBorderless) flags = flags | SDL_WINDOW_BORDERLESS;
 		if (m_WindowParams.bMaximized) flags = flags | SDL_WINDOW_MAXIMIZED;	
 		if (m_WindowParams.bMinimized) flags = flags | SDL_WINDOW_MINIMIZED;
+		if (m_WindowParams.bResizeAble) flags = flags | SDL_WINDOW_RESIZABLE;
 
 		m_pWindow = SDL_CreateWindow(m_WindowParams.sTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_WindowParams.nWidth, m_WindowParams.nHeight, flags);
 		if (m_pWindow == NULL)

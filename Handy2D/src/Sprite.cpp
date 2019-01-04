@@ -33,8 +33,16 @@ void CImageSprite::Render(const CRenderLayer& Layer)
 	auto pTextureShared = m_pTexture.lock();
 	auto pData = pTextureShared.get()->GetTexture();
 
-	
-	SDL_RenderCopy(SDLManager::Instance.GetRenderer(), pData, nullptr, &Rect);
+	SDL_Rect Result;
+	SDL_IntersectRect(&Rect, &Rect2, &Result);
+
+	SDL_Rect Src;
+	Src.x = Rect.x < Rect2.x ? Rect2.x - Rect.x : 0;
+	Src.y = Rect.y < Rect2.y ? Rect2.y - Rect.y : 0;
+	Src.w = Result.w;
+	Src.h = Result.h;
+
+	SDL_RenderCopy(SDLManager::Instance.GetRenderer(), pData, &Src, &Result);
 	SDLManager::drawnum++;
 }
 

@@ -124,7 +124,7 @@ class CTestGame : public CGameLogic
 			tiles[rand() % (nSizeX*nSizeY)] = ETS_Mine_Unused;
 		}
 
-		CGuiLayer* pGui = new CGuiLayer(800, 600);
+		CGuiLayer* pGui = new CGuiLayer(IntRect(0,0,800, 600));
 		SDLManager::Instance.AddLayer(pGui);
 
 		auto fnTileClick = [=](SClickEvent& Event) {
@@ -280,6 +280,7 @@ int main(int argc, char* args[])
 	Params.nWidth = 800;
 	Params.nHeight = 600;
 	Params.sTitle = "Minesweeper";
+	Params.bResizeAble = true;
 
 	{
 		CTestGame* pGame = new CTestGame();

@@ -257,7 +257,7 @@ class CTestGame : public CGameLogic
 		root = std::make_shared<CGameObject>();
 
 		Vec Size = SDLManager::Instance.GetSize();
-		pLayer = new CSpriteRenderLayer(Size.x, Size.y);
+		pLayer = new CSpriteRenderLayer(IntRect(0,0,Size.x, Size.y));
 		SDLManager::Instance.AddLayer(pLayer);
 
 		ship = std::make_shared<CShip>();
@@ -290,7 +290,7 @@ class CTestGame : public CGameLogic
 		pLayer->AddSprite(pTextSprite);
 		
 
-		CGuiLayer* pGui = new CGuiLayer(800, 600);
+		CGuiLayer* pGui = new CGuiLayer(IntRect(0,0,800, 600));
 		SDLManager::Instance.AddLayer(pGui);
 
 		auto fnTileClick = [=](SClickEvent& Event) {

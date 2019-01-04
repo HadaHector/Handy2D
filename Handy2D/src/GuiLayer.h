@@ -139,6 +139,20 @@ private:
 	EValidity m_eValid = EUnknown;
 };
 
+struct SAlignSettings
+{
+	IntVec size;
+
+};
+
+class CGuiAlignContainer : public CGuiElement
+{
+public:
+	CGuiAlignContainer();
+private:
+	std::map<CGuiElement*, SAlignSettings> m_mChildAligns;
+};
+
 
 struct ElementRect
 {
@@ -151,7 +165,7 @@ class CGuiLayer :
 	public CRenderLayer
 {
 public:
-	CGuiLayer(int x, int y);
+	CGuiLayer(const IntRect& Rect);
 	~CGuiLayer();
 
 	void Render();

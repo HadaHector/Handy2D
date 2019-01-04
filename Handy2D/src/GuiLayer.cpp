@@ -41,7 +41,7 @@ int CGuiElement::AddClickEventListener(std::function<void(SClickEvent&)> Event)
 }
 
 
-CGuiLayer::CGuiLayer(int x, int y) : CRenderLayer(x, y)
+CGuiLayer::CGuiLayer(const IntRect& Rect) : CRenderLayer(Rect)
 {
 	m_pRoot = new CGuiElement();
 	m_pRoot->SetLayer(this);

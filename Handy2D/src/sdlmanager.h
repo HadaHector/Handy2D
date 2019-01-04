@@ -21,6 +21,7 @@ struct SWindowParams
 	bool bBorderless = false;
 	bool bMaximized = false;
 	bool bMinimized = false;
+	bool bResizeAble = false;
 	int nWidth, nHeight, nLeft, nRight;
 };
 
@@ -30,6 +31,9 @@ class SDLManager
 public:
 	static SDLManager Instance;
 	static void Start(SWindowParams Params, CGameLogic* pGameLogic);
+	static void SetWindowSize(IntVec size);
+	static void SetWindowMinSize(IntVec size);
+	static void SetWindowMaxSize(IntVec size);
 	static Vec GetSize();
 	static int drawnum;
 	static int spritenum;
