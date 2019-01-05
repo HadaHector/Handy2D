@@ -1,8 +1,14 @@
 #include "GameObject.h"
+#include "SDLManager.h"
+#include "CollisionManager.h"
 
-
-
-
+CGameObject::~CGameObject()
+{
+	if (bHasCollider)
+	{
+		CCollisionManager::RemoveCollidersForGameObject(this);
+	}
+}
 
 void CGameObject::UpdateInternal(const Vec& vPos)
 {
@@ -21,9 +27,24 @@ void CGameObject::UpdateInternal(const Vec& vPos)
 	}
 }
 
-void CGameObject::AttachSprite(std::shared_ptr<CSprite> pSprite, Vec vPos)
+void CGameObject::AttachSprite(std::shared_ptr<CSprite> pSprite, Vec vPos, const std::vector<std::string>& aTags)
 {
 	m_aChildrenSprites.push_back({ pSprite, vPos });
+
+	for (CRenderLayer* layer : SDLManager::Instance.GetRenderLayers())
+	{
+		for (auto&& tag : aTags)
+		{
+			if (layer->HasTag(tag))
+			{
+				CSpriteRenderLayer* pSpritelayer = dynamic_cast<CSpriteRenderLayer*>(layer);
+				if (pSpritelayer)
+				{
+					AddToLayer(pSpritelayer);
+				}
+			}
+		}
+	}
 }
 
 void CGameObject::AttachGameObject(std::shared_ptr<CGameObject> pGameObject, Vec vPos)
@@ -134,4 +155,21 @@ void CGameObject::DestroySelf()
 	{
 		m_pParent->DestroyChild(this);
 	}
+}
+
+void CGameObject::AddCollider(const IntRect& rect, bool bDynamic, bool bListen)
+{
+	CollisionComponent Comp;
+	Comp.bListener = bListen;
+	Comp.pGameObject = this;
+	Comp.rect = rect;
+	if (bDynamic)
+	{
+		CCollisionManager::AddDynamicCollider(Comp);
+	}
+	else
+	{
+		CCollisionManager::AddStaticCollider(Comp);
+	}
+	bHasCollider = true;
 }

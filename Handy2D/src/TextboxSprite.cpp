@@ -88,7 +88,7 @@ void STextBlock::SetColor(Color color)
 }
 
 
-void CTextboxSprite::Render(const CRenderLayer& Layer)
+void CTextboxSprite::Render(const CRenderLayer& Layer, Vec vOffset)
 {
 	if (!m_bGenerated)
 	{

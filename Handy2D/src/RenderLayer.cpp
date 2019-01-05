@@ -43,3 +43,30 @@ void CSpriteRenderLayer::RemoveSprite(std::weak_ptr<CSprite> pSprite)
 	}
 	
 }
+
+
+void CCameraRenderLayer::Render()
+{
+	if (m_bVisible)
+	{
+		std::vector<int> aBadIndices;
+
+		for (unsigned int i = 0; i < m_aSprites.size(); ++i)
+		{
+			auto pSprite = m_aSprites[i].lock();
+			if (pSprite)
+			{
+				pSprite->Render(*this, -m_vPosition + m_Rect.GetUpperLeft());
+			}
+			else
+			{
+				aBadIndices.push_back(i);
+			}
+		}
+
+		for (int i = aBadIndices.size() - 1; i >= 0; --i)
+		{
+			m_aSprites.erase(m_aSprites.begin() + aBadIndices[i]);
+		}
+	}
+}

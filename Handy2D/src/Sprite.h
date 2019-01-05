@@ -12,7 +12,7 @@ class CSprite
 public:
 	CSprite() {}
 	virtual ~CSprite() {}
-	virtual void Render(const CRenderLayer& Layer) {}
+	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec()) {}
 
 
 	Vec GetPos() { return m_Position; }
@@ -40,7 +40,7 @@ class CImageSprite : public CSprite
 public:
 	CImageSprite();
 	virtual ~CImageSprite();
-	virtual void Render(const CRenderLayer& Layer);
+	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec());
 
 	virtual void SetTexture(std::weak_ptr<CTexture> pTexture);
 
@@ -53,7 +53,7 @@ class CAnimSprite : public CImageSprite
 public:
 	virtual ~CAnimSprite();
 
-	virtual void Render(const CRenderLayer& Layer);
+	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec());
 	void SetTexture(std::weak_ptr<CTexture> pTexture);
 	void SetRowsAndCols(int row, int col)
 	{
@@ -73,7 +73,7 @@ private:
 	void RefreshTileSizes();
 
 	int m_nRows = 1, m_nCols = 1;
-	Vec m_TileSize, m_Size;
+	Vec m_TileSize;
 	double m_clock = 0, m_frametime = 0;
 	int m_nFrame = 0;
 };
@@ -87,7 +87,7 @@ class CTextSprite : public CSprite
 public:
 	virtual ~CTextSprite();
 
-	virtual void Render(const CRenderLayer& Layer);
+	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec());
 	virtual void SetTexture(std::weak_ptr<CTexture> pTexture) {}; //not used
 
 	void SetText(const std::string& sText) { m_sText = sText; }

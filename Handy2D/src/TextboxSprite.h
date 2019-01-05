@@ -36,7 +36,7 @@ public:
 	CTextboxSprite() { m_bDynamic = true;  };
 	void Clear() { m_aBlocks.clear(); }
 	void AddBlock(const STextBlock& Block) { m_aBlocks.push_back(Block); }
-	virtual void Render(const CRenderLayer& Layer) override;
+	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec()) override;
 	void SetDynamic(bool d) { m_bDynamic = d; }
 	bool IsDynamic() const { return m_bDynamic; }
 	void SetHAlign(float fAlign);

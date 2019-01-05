@@ -34,12 +34,13 @@ public:
 	static void SetWindowSize(IntVec size);
 	static void SetWindowMinSize(IntVec size);
 	static void SetWindowMaxSize(IntVec size);
-	static Vec GetSize();
+	static IntVec GetSize();
 	static int drawnum;
 	static int spritenum;
 
 	struct SDL_Renderer* GetRenderer();
 	void AddLayer(CRenderLayer* pLayer);
+	std::list<CRenderLayer*>& GetRenderLayers() { return m_aRenderLayers; }
 
 	int m_nWidth, m_nHeight;
 

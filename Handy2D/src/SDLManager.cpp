@@ -10,6 +10,7 @@
 #include "PaintedImage.h"
 #include "Texture.h"
 #include "Time.h"
+#include "CollisionManager.h"
 
 
 
@@ -68,6 +69,7 @@ public:
 		break;
 		case SDL_MOUSEWHEEL:
 			break;
+
 		default:
 			break;
 		}
@@ -104,6 +106,7 @@ void SDLManager::SetWindowMaxSize(IntVec size)
 {
 	SDL_SetWindowMaximumSize(Instance.m_pWindow, size.x, size.y);
 }
+
 
 
 bool SDLManager::Init()
@@ -263,6 +266,7 @@ void SDLManager::MainLoop()
 void SDLManager::RunFrame()
 {
 	m_pGameLogic->Update();
+	CCollisionManager::Collide();
 
 	drawnum = 0;
 
@@ -278,9 +282,11 @@ void SDLManager::RunFrame()
 }
 
 
-Vec SDLManager::GetSize()
+IntVec SDLManager::GetSize()
 {
-	return Vec({ (float) Instance.m_WindowParams.nWidth, (float)Instance.m_WindowParams.nHeight });
+	IntVec size;
+	SDL_GetWindowSize(Instance.m_pWindow, &size.x, &size.y);
+	return size;
 }
 
 void SDLManager::AddLayer(CRenderLayer * pLayer)

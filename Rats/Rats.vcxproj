@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -18,58 +18,23 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\CollisionManager.h" />
-    <ClInclude Include="src\Color.h" />
-    <ClInclude Include="src\Font.h" />
-    <ClInclude Include="src\GameLogic.h" />
-    <ClInclude Include="src\Keys.h" />
-    <ClInclude Include="src\RenderLayer.h" />
-    <ClInclude Include="src\Sprite.h" />
-    <ClInclude Include="src\TextboxSprite.h" />
-    <ClInclude Include="src\Texture.h" />
-    <ClInclude Include="src\GameObject.h" />
-    <ClInclude Include="src\Geometry.h" />
-    <ClInclude Include="src\GuiLayer.h" />
-    <ClInclude Include="src\Input.h" />
-    <ClInclude Include="src\PaintedImage.h" />
-    <ClInclude Include="src\sdlmanager.h" />
-    <ClInclude Include="src\Time.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\CollisionManager.cpp" />
-    <ClCompile Include="src\Color.cpp" />
-    <ClCompile Include="src\Font.cpp" />
-    <ClCompile Include="src\RenderLayer.cpp" />
-    <ClCompile Include="src\Sprite.cpp" />
-    <ClCompile Include="src\TextboxSprite.cpp" />
-    <ClCompile Include="src\Texture.cpp" />
-    <ClCompile Include="src\GameObject.cpp" />
-    <ClCompile Include="src\Geometry.cpp" />
-    <ClCompile Include="src\GuiLayer.cpp" />
-    <ClCompile Include="src\Input.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\PaintedImage.cpp" />
-    <ClCompile Include="src\SDLManager.cpp" />
-    <ClCompile Include="src\Time.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{613601C6-AD4B-4751-8723-362F59786B00}</ProjectGuid>
-    <RootNamespace>Handy2D</RootNamespace>
+    <ProjectGuid>{84B26F33-506C-4C3F-9D8C-CF604BDC719B}</ProjectGuid>
+    <RootNamespace>Rats</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -104,39 +69,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Code\c++\Handy2D\Handy2D\Dependencies\SDL2-2.0.9\include;$(ProjectDir)Dependencies\SDL2-2.0.9\include\;$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\include;$(ProjectDir)Dependencies\SDL2_image-2.0.4\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\lib\x86;$(ProjectDir)Dependencies\SDL2_image-2.0.4\lib\x86;$(ProjectDir)Dependencies\SDL2-2.0.9\lib\x86;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)Dependencies\SDL2-2.0.9\include\;$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\include;$(ProjectDir)Dependencies\SDL2_image-2.0.4\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\lib\x86;$(ProjectDir)Dependencies\SDL2_image-2.0.4\lib\x86;$(ProjectDir)Dependencies\SDL2-2.0.9\lib\x86;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)Dependencies\SDL2-2.0.9\include\;$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\include\;$(ProjectDir)Dependencies\SDL2_image-2.0.4\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)Dependencies\SDL2_image-2.0.4\lib\x64;$(ProjectDir)Dependencies\SDL2-2.0.9\lib\x64;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)Dependencies\SDL2-2.0.9\include\;$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\include\;$(ProjectDir)Dependencies\SDL2_image-2.0.4\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)Dependencies\SDL2_image-2.0.4\lib\x64;$(ProjectDir)Dependencies\SDL2-2.0.9\lib\x64;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Handy2D\src\</AdditionalIncludeDirectories>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
-    </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-    </ProjectReference>
-    <Lib>
-      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib</AdditionalDependencies>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -158,8 +99,6 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -176,6 +115,14 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Rats.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Handy2D\Handy2D.vcxproj">
+      <Project>{613601c6-ad4b-4751-8723-362f59786b00}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

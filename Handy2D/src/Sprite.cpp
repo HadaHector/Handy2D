@@ -23,15 +23,18 @@ CImageSprite::CImageSprite() { SDLManager::spritenum++; }
 
 CImageSprite::~CImageSprite() { SDLManager::spritenum--; }
 
-void CImageSprite::Render(const CRenderLayer& Layer)
+void CImageSprite::Render(const CRenderLayer& Layer, Vec vOffset)
 {
 	SDL_Rect Rect = GetRect();
+	Rect.x += vOffset.x;
+	Rect.y += vOffset.y;
 	SDL_Rect Rect2 = Layer.GetRect();
 	if (!SDL_HasIntersection(&Rect2, &Rect)) return;
 
 	if (m_pTexture.expired()) return;
 	auto pTextureShared = m_pTexture.lock();
 	auto pData = pTextureShared.get()->GetTexture();
+	IntVec vOriginalSize = pTextureShared->GetSize();
 
 	SDL_Rect Result;
 	SDL_IntersectRect(&Rect, &Rect2, &Result);
@@ -39,8 +42,10 @@ void CImageSprite::Render(const CRenderLayer& Layer)
 	SDL_Rect Src;
 	Src.x = Rect.x < Rect2.x ? Rect2.x - Rect.x : 0;
 	Src.y = Rect.y < Rect2.y ? Rect2.y - Rect.y : 0;
-	Src.w = Result.w;
-	Src.h = Result.h;
+	Src.x *= vOriginalSize.x / m_Size.x;
+	Src.y *= vOriginalSize.y / m_Size.y;
+	Src.w = Result.w * (vOriginalSize.x / m_Size.x);
+	Src.h = Result.h * (vOriginalSize.y / m_Size.y);
 
 	SDL_RenderCopy(SDLManager::Instance.GetRenderer(), pData, &Src, &Result);
 	SDLManager::drawnum++;
@@ -55,7 +60,7 @@ void CImageSprite::SetTexture(std::weak_ptr<CTexture> pTexture)
 
 CAnimSprite::~CAnimSprite() { SDLManager::spritenum--; }
 
-void CAnimSprite::Render(const CRenderLayer& Layer)
+void CAnimSprite::Render(const CRenderLayer& Layer, Vec vOffset)
 {
 	int nFrame = m_nFrame;
 	if (m_frametime != 0.0f)
@@ -77,7 +82,27 @@ void CAnimSprite::Render(const CRenderLayer& Layer)
 	FromRect.h = (int) m_TileSize.y;
 
 	SDL_Rect Rect = GetRect();
-	SDL_RenderCopy(SDLManager::Instance.GetRenderer(), pData, &FromRect, &Rect);
+	Rect.x += vOffset.x;
+	Rect.y += vOffset.y;
+	SDL_Rect Rect2 = Layer.GetRect();
+	if (!SDL_HasIntersection(&Rect2, &Rect)) return;
+
+
+	SDL_Rect Result;
+	SDL_IntersectRect(&Rect, &Rect2, &Result);
+
+	SDL_Rect Src;
+	Src.x = Rect.x < Rect2.x ? Rect2.x - Rect.x : 0;
+	Src.y = Rect.y < Rect2.y ? Rect2.y - Rect.y : 0;
+	Src.x *= m_TileSize.x / m_Size.x;
+	Src.y *= m_TileSize.y / m_Size.y;
+	Src.x += FromRect.x;
+	Src.y += FromRect.y;
+	Src.w = FromRect.w * (Result.w / m_Size.x);
+	Src.h = FromRect.h * (Result.h / m_Size.y);
+
+
+	SDL_RenderCopy(SDLManager::Instance.GetRenderer(), pData, &Src, &Result);
 	SDLManager::drawnum++;
 
 }
@@ -99,7 +124,7 @@ void CAnimSprite::RefreshTileSizes()
 
 //CTextSprite
 
-void CTextSprite::Render(const CRenderLayer & Layer)
+void CTextSprite::Render(const CRenderLayer & Layer, Vec vOffset)
 {
 	if (!m_pFont) return;
 	if (m_bCreateError) return;

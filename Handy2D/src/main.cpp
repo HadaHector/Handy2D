@@ -21,7 +21,7 @@ public:
 		pShip->SetTexture(CTexture::GetTexture("ship1.png"));
 		pShip->SetRowsAndCols(9, 1);
 		pShip->SetSize(128, 64);
-		AttachSprite(pShip, Vec(-64, -32));
+		AttachSprite(pShip, Vec(-64, -32), {});
 	}
 
 	virtual void Update()
@@ -59,7 +59,7 @@ public:
 		pShip = std::make_shared<CImageSprite>();
 		pShip->SetTexture(CTexture::GetTexture("ship.png"));
 		pShip->SetSize(20, 20);
-		AttachSprite(pShip, Vec(-10, -10));
+		AttachSprite(pShip, Vec(-10, -10), {});
 
 		m_fDelta = fDelta;
 		
@@ -103,7 +103,7 @@ public:
 			std::shared_ptr<CImageSprite> pShip = std::make_shared<CImageSprite>();
 			pShip->SetTexture(CTexture::GetTexture("ship.png"));
 			pShip->SetSize(58.0f, 77.0f);
-			AttachSprite(pShip, Vec(-29, -35));
+			AttachSprite(pShip, Vec(-29, -35), {});
 		}
 		for (float i = 0.0f; i < 6.28f; ++i)
 		{

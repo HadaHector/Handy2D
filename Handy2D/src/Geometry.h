@@ -2,6 +2,7 @@
 
 struct SDL_Point;
 struct SDL_Rect;
+class IntVec;
 
 class Vec
 {
@@ -36,7 +37,22 @@ public:
 	{
 		return Vec(-x, -y);
 	}
+
+	template< class T >
+	Vec operator/(T f) const
+	{
+		return Vec((float)(x / f), (float)(y / f));
+	}
+
+	template< class T >
+	Vec operator*(T f) const
+	{
+		return Vec((float)(x * f), (float)(y * f));
+	}
+
 	operator SDL_Point() const;
+
+	operator IntVec() const;
 };
 
 
@@ -53,7 +69,7 @@ public:
 		y += other.y;
 	}
 
-	IntVec operator+(const IntVec& other)
+	IntVec operator+(const IntVec& other) const
 	{
 		return IntVec(x + other.x, y + other.y);
 	}
@@ -64,9 +80,21 @@ public:
 		y -= other.y;
 	}
 
-	IntVec operator-(const IntVec& other)
+	IntVec operator-(const IntVec& other) const
 	{
 		return IntVec(x - other.x, y - other.y);
+	}
+
+	template< class T >
+	IntVec operator/(T f) const
+	{
+		return IntVec((int)( x / f),(int)( y / f));
+	}
+
+	template< class T >
+	IntVec operator*(T f) const
+	{
+		return IntVec((int)(x * f), (int)(y * f));
 	}
 
 	IntVec operator-()
@@ -87,9 +115,13 @@ public:
 	IntRect() {};
 	IntRect(int x, int y, int x2, int y2)
 		:m_vPos(x, y), m_vSize(x2, y2) {}
-	IntVec GetUpperLeft() { return m_vPos; }
-	IntVec GetBottomRight() { return m_vPos + m_vSize; }
-	IntVec GetSize() { return m_vSize; }
+	IntVec GetUpperLeft() const { return m_vPos; } 
+	IntVec GetBottomRight() const { return m_vPos + m_vSize; }
+	IntVec GetSize() const { return m_vSize; }
+	void SetPos(const IntVec& pos) { m_vPos = pos; }
+	void SetSize(const IntVec& size) { m_vSize = size; }
+
+	bool HasIntersection(const IntRect& other);
 
 	operator SDL_Rect() const;
 	IntRect(const SDL_Rect& rect);
