@@ -48,7 +48,6 @@
     <ClCompile Include="src\Geometry.cpp" />
     <ClCompile Include="src\GuiLayer.cpp" />
     <ClCompile Include="src\Input.cpp" />
-    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\PaintedImage.cpp" />
     <ClCompile Include="src\SDLManager.cpp" />
     <ClCompile Include="src\Time.cpp" />
