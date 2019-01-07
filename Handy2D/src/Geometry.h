@@ -53,6 +53,16 @@ public:
 	operator SDL_Point() const;
 
 	operator IntVec() const;
+
+	void Reset()
+	{
+		x = y = 0;
+	}
+
+	operator bool()
+	{
+		return x != 0.0f || y != 0.0f;
+	}
 };
 
 
@@ -106,6 +116,16 @@ public:
 	operator Vec() const
 	{
 		return Vec((float)x, (float)y);
+	}
+
+	void Reset()
+	{
+		x = y = 0;
+	}
+
+	operator bool()
+	{
+		return x != 0 || y != 0;
 	}
 };
 

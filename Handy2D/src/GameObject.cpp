@@ -2,17 +2,34 @@
 #include "SDLManager.h"
 #include "CollisionManager.h"
 
+
 CGameObject::~CGameObject()
 {
-	if (bHasCollider)
-	{
-		CCollisionManager::RemoveCollidersForGameObject(this);
-	}
+
+}
+
+void CGameObject::AddMovement(const Vec& vec)
+{
+	m_vMove += vec;
 }
 
 void CGameObject::UpdateInternal(const Vec& vPos)
 {
+	if (!m_bInited)
+	{
+		Init();
+		m_bInited = true;
+	}
+
 	Update();
+	if (m_vMove)
+	{
+		SColliderMoveInstruct Move;
+		Move.pObject = this;
+		Move.vMove = m_vMove;
+		m_vMove -= Move.vMove;
+		CCollisionManager::AddInstruct(Move);
+	}
 
 	Vec origo = m_vPosition + vPos;
 
@@ -157,11 +174,11 @@ void CGameObject::DestroySelf()
 	}
 }
 
-void CGameObject::AddCollider(const IntRect& rect, bool bDynamic, bool bListen)
+void CGameObject::AddCollider(const IntRect& rect, bool bDynamic, int flags)
 {
 	CollisionComponent Comp;
-	Comp.bListener = bListen;
-	Comp.pGameObject = this;
+	Comp.flags = flags;
+	Comp.pGameObject = shared_from_this();
 	Comp.rect = rect;
 	if (bDynamic)
 	{
@@ -169,6 +186,7 @@ void CGameObject::AddCollider(const IntRect& rect, bool bDynamic, bool bListen)
 	}
 	else
 	{
+		Comp.rect.SetPos(Comp.rect.GetUpperLeft() + GetAbsolutePos() );
 		CCollisionManager::AddStaticCollider(Comp);
 	}
 	bHasCollider = true;

@@ -26,12 +26,12 @@ public:
 
 	virtual void Update()
 	{
-		if (bMoveRight && m_vPosition.x > 800)
+		if (bMoveRight && GetPos().x > 800)
 		{
 			bMoveRight = false;
 		}
 		else
-		if (!bMoveRight && m_vPosition.x < 250)
+		if (!bMoveRight && GetPos().x < 250)
 		{
 			bMoveRight = true;
 		}
@@ -40,7 +40,7 @@ public:
 		fVelocity = fmin(200, fmax(-200, fVelocity));
 
 		pShip->SetFrame((int)roundf(4.0f + fVelocity / 50.0f));
-		m_vPosition.x += fVelocity * Time::frame;
+		Move({ (float)(fVelocity * Time::frame) ,0.0f });
 	}
 };
 
@@ -69,11 +69,11 @@ public:
 	{
 		if (!bFired)
 		{
-			m_vPosition = Vec(sin(Time::full + m_fDelta) * 100, cos(Time::full + m_fDelta) * 100);
+			SetPosition(Vec(sin(Time::full + m_fDelta) * 100, cos(Time::full + m_fDelta) * 100));
 		}
 		else
 		{
-			m_vPosition.y += Time::frame * -300;
+			Move({ 0.0f,(float)Time::frame * -300 });
 			fDet += Time::frame;
 
 			if (fDet > 1.0f)
@@ -97,7 +97,7 @@ class CShip : public CGameObject
 public: 
 	CShip()
 	{
-		m_vPosition = Vec(500, 500);
+		SetPosition(Vec(500, 500));
 		CTexture::LoadTexture("ship.png");
 		{
 			std::shared_ptr<CImageSprite> pShip = std::make_shared<CImageSprite>();
@@ -117,11 +117,11 @@ public:
 	{
 		if (Input::GetKey(KEY_RIGHT).active)
 		{
-			m_vPosition.x += Time::frame * 200;
+			Move({ (float)Time::frame * 200 ,0.0f });
 		}
 		if (Input::GetKey(KEY_LEFT).active)
 		{
-			m_vPosition.x -= Time::frame * 200;
+			Move({ (float)Time::frame * -200 ,0.0f });
 		}
 
 		

@@ -9,27 +9,47 @@
 #include "CollisionManager.h"
 
 
+class CDirt : public CGameObject
+{
+public:
+	virtual void Init()
+	{
+		CTexture::LoadTexture("resources/dirt.png");
+		std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
+		pSprite->SetTexture(CTexture::GetTexture("resources/dirt.png"));
+		pSprite->SetSize(64, 64);
+		AttachSprite(pSprite, Vec(0, 0), { "camera" });
+		AddCollider(IntRect(0, 0, 64, 64), false, OVERLAP | OVERLAP_EVENTS | COLLIDE);
+	}
+
+	virtual void Update()
+	{
+	}
+
+};
+
+
 class CProjectile : public CGameObject
 {
-	Vec m_vSpeed;
+	IntVec m_vSpeed;
 	int m_nPlayer;
 public:
-	CProjectile()
+	virtual void Init()
 	{
 		CTexture::LoadTexture("resources/projectile.png");
 		std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
 		pSprite->SetTexture(CTexture::GetTexture("resources/projectile.png"));
 		pSprite->SetSize(8, 8);
 		AttachSprite(pSprite, Vec(-4, -4), { "camera" });
-		AddCollider(IntRect(-4, -4, 8, 8), true, true);
+		AddCollider(IntRect(-4, -4, 8, 8), true, OVERLAP | OVERLAP_EVENTS);
 	}
 
 	virtual void Update()
 	{
-		m_vPosition += m_vSpeed * Time::frame;
+		AddMovement(m_vSpeed * Time::frame);
 	}
 
-	void SetSpeed(const Vec& spd)
+	void SetSpeed(const IntVec& spd)
 	{
 		m_vSpeed = spd;
 	}
@@ -39,7 +59,7 @@ public:
 		m_nPlayer = nPlayer;
 	}
 
-	virtual void OnCollide(const SOverlapEvent& event) override;
+	virtual void OnOverlap(const SOverlapEvent& event) override;
 
 };
 
@@ -54,9 +74,9 @@ private:
 
 	int m_nHealth = 100;
 public:
-	CRat()
+	virtual void Init()
 	{
-		m_vPosition = Vec(0, 0);
+		SetPosition(Vec(0, 0));
 		CTexture::LoadTexture("resources/rat_left.png");
 		CTexture::LoadTexture("resources/rat_right.png");
 		m_pRat = std::make_shared<CAnimSprite>();
@@ -64,15 +84,15 @@ public:
 		m_pRat->SetRowsAndCols(4, 1);
 		m_pRat->SetSize(170,64);
 		AttachSprite(m_pRat, Vec(-85, -32), {"camera"});
-		AddCollider(IntRect(-85, -32, 170, 64), true, true);
+		AddCollider(IntRect(-85, -32, 170, 64), true, OVERLAP | OVERLAP_EVENTS | COLLIDE | COLLIDE_EVENTS);
 	}
 
 	void Fire()
 	{
 		auto bullet = std::make_shared<CProjectile>();
-		bullet->SetSpeed(Vec(1000, 0));
+		bullet->SetSpeed(IntVec(1000, 0));
 		bullet->SetPlayer(m_nPlayer);
-		GetParent()->AttachGameObject(bullet, m_vPosition);
+		GetParent()->AttachGameObject(bullet, GetAbsolutePos());
 	}
 
 	virtual void Update()
@@ -80,26 +100,26 @@ public:
 		bool bMoving = false;
 		if (Input::GetKey(m_nPlayer ? KEY_RIGHT : KEY_D).active)
 		{
-			m_vPosition.x += Time::frame * 200;
+			AddMovement({ (float)Time::frame * 300.0f,0.0f});
 			m_pRat->SetTexture(CTexture::GetTexture("resources/rat_right.png"));
 			m_pRat->SetSize(170, 64);
 			bMoving = true;
 		}
 		if (Input::GetKey(m_nPlayer ? KEY_LEFT : KEY_A).active)
 		{
-			m_vPosition.x -= Time::frame * 200;
+			AddMovement({ (float)Time::frame * -300.0f,0.0f });
 			m_pRat->SetTexture(CTexture::GetTexture("resources/rat_left.png"));
 			m_pRat->SetSize(170, 64);
 			bMoving = true;
 		}
 		if (Input::GetKey(m_nPlayer ? KEY_DOWN : KEY_S).active)
 		{
-			m_vPosition.y += Time::frame * 200;
+			AddMovement({ 0.0f,(float)Time::frame * 300.0f });
 			bMoving = true;
 		}
 		if (Input::GetKey(m_nPlayer ? KEY_UP : KEY_W).active)
 		{
-			m_vPosition.y -= Time::frame * 200;
+			AddMovement({ 0.0f, (float)Time::frame * -300.0f });
 			bMoving = true;
 		}
 		if (Input::GetKey(m_nPlayer ? KEY_KP_0 : KEY_SPACE).active && m_cooldown == 0)
@@ -138,14 +158,24 @@ public:
 
 };
 
-void CProjectile::OnCollide(const SOverlapEvent& event)
+void CProjectile::OnOverlap(const SOverlapEvent& event)
 {
-	CRat* pRat = dynamic_cast<CRat*>(event.pOther);
+
+	CRat* pRat = dynamic_cast<CRat*>(event.pOther.get());
 	if (pRat && pRat->m_nPlayer != m_nPlayer)
 	{
 		pRat->Damage(10);
 		DestroySelf();
+		return;
 	}
+
+	CDirt* pDirt = dynamic_cast<CDirt*>(event.pOther.get());
+	if (pDirt)
+	{
+		pDirt->DestroySelf();
+		return;
+	}
+	
 }
 
 class CTestGame : public CGameLogic
@@ -193,6 +223,9 @@ class CTestGame : public CGameLogic
 		rat2->SetPosition(Vec(300, 0));
 		root->AttachGameObject(rat2, Vec(0, 0));
 		m_rat2 = rat2;
+
+		auto dirt = std::make_shared<CDirt>();
+		root->AttachGameObject(dirt, Vec(200, 200));
 
 		return true;
 	}
