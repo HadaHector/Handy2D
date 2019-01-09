@@ -45,7 +45,7 @@ IntVec LimitMove(const IntVec& vMove, const IntRect& From, const IntRect& Agains
 void CCollisionManager::Collide()
 {
 	//removing unreferenced gameobjects
-	for (int i = m_aDynamicColliders.size() - 1; i > 0; i--)
+	for (int i = m_aDynamicColliders.size() - 1; i >= 0; i--)
 	{
 		if (m_aDynamicColliders[i].pGameObject.expired())
 		{
@@ -53,7 +53,7 @@ void CCollisionManager::Collide()
 		}
 	}
 
-	for (int i = m_aStaticColliders.size() - 1; i > 0; i--)
+	for (int i = m_aStaticColliders.size() - 1; i >= 0; i--)
 	{
 		if (m_aStaticColliders[i].pGameObject.expired())
 		{
@@ -112,17 +112,20 @@ void CCollisionManager::Collide()
 						{
 							auto pStaticObj = Static.pGameObject.lock();
 							auto pDynamicObj = Dynamic.pGameObject.lock();
-							if (Dynamic.flags & COLLIDE_EVENTS)
+							if (pStaticObj && pDynamicObj)
 							{
-								SCollisionEvent e;
-								e.pOther = pStaticObj;
-								aCollisionEvents.push_back({ e, pDynamicObj });
-							}
-							if (Static.flags & COLLIDE_EVENTS)
-							{
-								SCollisionEvent e;
-								e.pOther = pDynamicObj;
-								aCollisionEvents.push_back({ e, pStaticObj });
+								if (Dynamic.flags & COLLIDE_EVENTS)
+								{
+									SCollisionEvent e;
+									e.pOther = pStaticObj;
+									aCollisionEvents.push_back({ e, pDynamicObj });
+								}
+								if (Static.flags & COLLIDE_EVENTS)
+								{
+									SCollisionEvent e;
+									e.pOther = pDynamicObj;
+									aCollisionEvents.push_back({ e, pStaticObj });
+								}
 							}
 						}
 
@@ -141,17 +144,20 @@ void CCollisionManager::Collide()
 						{
 							auto pStaticObj = Static.pGameObject.lock();
 							auto pDynamicObj = Dynamic.pGameObject.lock();
-							if (Dynamic.flags & OVERLAP_EVENTS)
+							if (pStaticObj && pDynamicObj)
 							{
-								SOverlapEvent e;
-								e.pOther = pStaticObj;
-								aOverlapEvents.push_back({ e, pDynamicObj });
-							}
-							if (Static.flags & OVERLAP_EVENTS)
-							{
-								SOverlapEvent e;
-								e.pOther = pDynamicObj;
-								aOverlapEvents.push_back({ e,pStaticObj });
+								if (Dynamic.flags & OVERLAP_EVENTS)
+								{
+									SOverlapEvent e;
+									e.pOther = pStaticObj;
+									aOverlapEvents.push_back({ e, pDynamicObj });
+								}
+								if (Static.flags & OVERLAP_EVENTS)
+								{
+									SOverlapEvent e;
+									e.pOther = pDynamicObj;
+									aOverlapEvents.push_back({ e,pStaticObj });
+								}
 							}
 						}
 					}
@@ -174,9 +180,12 @@ void CCollisionManager::Collide()
 							{
 								auto pDynamicObj = Dynamic.pGameObject.lock();
 								auto pDynamic2Obj = Dynamic2.pGameObject.lock();
-								SCollisionEvent e;
-								e.pOther = pDynamic2Obj;
-								aCollisionEvents.push_back({ e, pDynamicObj });
+								if (pDynamicObj && pDynamic2Obj)
+								{
+									SCollisionEvent e;
+									e.pOther = pDynamic2Obj;
+									aCollisionEvents.push_back({ e, pDynamicObj });
+								}
 							}
 
 							IntVec vMov = LimitMove(Movement.vMove, Movement.From, m_aDynamicCurrent[j].To);
@@ -202,17 +211,20 @@ void CCollisionManager::Collide()
 						{
 							auto pDynamicObj = Dynamic.pGameObject.lock();
 							auto pDynamic2Obj = Dynamic2.pGameObject.lock();
-							if (Dynamic.flags & OVERLAP_EVENTS)
+							if (pDynamicObj && pDynamic2Obj)
 							{
-								SOverlapEvent e;
-								e.pOther = pDynamic2Obj;
-								aOverlapEvents.push_back({ e, pDynamicObj });
-							}
-							if (Dynamic2.flags & OVERLAP_EVENTS)
-							{
-								SOverlapEvent e;
-								e.pOther = pDynamicObj;
-								aOverlapEvents.push_back({ e, pDynamic2Obj });
+								if (Dynamic.flags & OVERLAP_EVENTS)
+								{
+									SOverlapEvent e;
+									e.pOther = pDynamic2Obj;
+									aOverlapEvents.push_back({ e, pDynamicObj });
+								}
+								if (Dynamic2.flags & OVERLAP_EVENTS)
+								{
+									SOverlapEvent e;
+									e.pOther = pDynamicObj;
+									aOverlapEvents.push_back({ e, pDynamic2Obj });
+								}
 							}
 						}
 					}

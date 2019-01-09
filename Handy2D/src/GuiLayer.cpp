@@ -186,7 +186,6 @@ void CGuiImage::Render()
 	m_pLayer->AddRenderData(m_pSprite,this);
 }
 
-
 CGuiText::CGuiText() : CGuiElement()
 {
 	m_vSize = IntVec(-1, -1);

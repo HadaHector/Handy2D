@@ -83,6 +83,7 @@ public:
 	CGuiImage();
 	void SetImage(const std::string& sPath);
 	virtual void Render();
+	virtual void SetSize(const IntVec& size) { m_vSize = size; m_eValid = EUnknown;}
 private:
 	void CalcSize();
 

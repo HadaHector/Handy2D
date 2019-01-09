@@ -72,8 +72,15 @@ private:
 	double m_cooldown = 0;
 	std::shared_ptr<CAnimSprite> m_pRat;
 
-	int m_nHealth = 100;
+	const float m_fMaxHealth = 100;
+	const float m_fMaxEnergy = 100;
+	float m_fHealth = m_fMaxHealth;
+	float m_fEnergy = m_fMaxEnergy;
 public:
+
+	float GetHealthRate() { return m_fHealth / m_fMaxHealth; }
+	float GetEnergyRate() { return m_fEnergy / m_fMaxEnergy; }
+
 	virtual void Init()
 	{
 		SetPosition(Vec(0, 0));
@@ -84,7 +91,7 @@ public:
 		m_pRat->SetRowsAndCols(4, 1);
 		m_pRat->SetSize(170,64);
 		AttachSprite(m_pRat, Vec(-85, -32), {"camera"});
-		AddCollider(IntRect(-85, -32, 170, 64), true, OVERLAP | OVERLAP_EVENTS | COLLIDE | COLLIDE_EVENTS);
+		AddCollider(IntRect(-85, -32, 64, 64), true, OVERLAP | OVERLAP_EVENTS | COLLIDE | COLLIDE_EVENTS);
 	}
 
 	void Fire()
@@ -141,6 +148,12 @@ public:
 		}
 
 		m_cooldown = std::max(double(0), m_cooldown - Time::frame);
+
+		m_fEnergy -= Time::frame * 0.5;
+		if (m_fEnergy <= 0)
+		{
+			Die();
+		}
 	}
 
 	void Die()
@@ -150,8 +163,8 @@ public:
 
 	void Damage(int nDmg)
 	{
-		m_nHealth -= nDmg;
-		if (m_nHealth <= 0) Die();
+		m_fHealth -= nDmg;
+		if (m_fHealth <= 0) Die();
 	}
 
 	int m_nPlayer = 0;
@@ -173,6 +186,7 @@ void CProjectile::OnOverlap(const SOverlapEvent& event)
 	if (pDirt)
 	{
 		pDirt->DestroySelf();
+		DestroySelf();
 		return;
 	}
 	
@@ -186,6 +200,10 @@ class CTestGame : public CGameLogic
 	std::weak_ptr<CRat> m_rat2;
 	std::shared_ptr<CImageSprite> pBg;
 	CCameraRenderLayer *pCamera1, *pCamera2;
+	CGuiLayer *pGui;
+
+	CGuiImage *pLeftBar1Bg, *pLeftBar2Bg, *pRightBar1Bg, *pRightBar2Bg;
+	CGuiImage *pLeftHpBar, *pLeftEnergyBar, *pRightHpBar, *pRightEnergyBar;
 
 	int nSizeX = 20, nSizeY = 15;
 
@@ -224,20 +242,120 @@ class CTestGame : public CGameLogic
 		root->AttachGameObject(rat2, Vec(0, 0));
 		m_rat2 = rat2;
 
-		auto dirt = std::make_shared<CDirt>();
-		root->AttachGameObject(dirt, Vec(200, 200));
+		for (int i = 0; i < 20; ++i)
+		{
+			for (int j = 0; j < 20; ++j)
+			{
+				auto dirt = std::make_shared<CDirt>();
+				root->AttachGameObject(dirt, Vec(i*64, j*64));
+			}
+		}
+		
+		pGui = new CGuiLayer(IntRect(0, 0, 1024, 512));
+		SDLManager::Instance.AddLayer(pGui);
+
+
+		CTexture::LoadTexture("resources/barbg.png");
+		CTexture::LoadTexture("resources/hpbar.png");
+		CTexture::LoadTexture("resources/energybar.png");
+
+	
+
+		pLeftBar1Bg = new CGuiImage();
+		pLeftBar1Bg->SetImage("resources/barbg.png");
+		pLeftBar2Bg = new CGuiImage();
+		pLeftBar2Bg->SetImage("resources/barbg.png");
+		pRightBar1Bg = new CGuiImage();
+		pRightBar1Bg->SetImage("resources/barbg.png");
+		pRightBar2Bg = new CGuiImage();
+		pRightBar2Bg->SetImage("resources/barbg.png");
+
+		pLeftHpBar = new CGuiImage();
+		pLeftHpBar->SetImage("resources/hpbar.png");
+		pRightHpBar = new CGuiImage();
+		pRightHpBar->SetImage("resources/hpbar.png");
+		pLeftEnergyBar = new CGuiImage();
+		pLeftEnergyBar->SetImage("resources/energybar.png");
+		pRightEnergyBar = new CGuiImage();
+		pRightEnergyBar->SetImage("resources/energybar.png");
+
+		pGui->GetRootElement()->AddChild(pLeftBar1Bg);
+		pGui->GetRootElement()->AddChild(pLeftBar2Bg);
+		pGui->GetRootElement()->AddChild(pRightBar1Bg);
+		pGui->GetRootElement()->AddChild(pRightBar2Bg);
+		pGui->GetRootElement()->AddChild(pLeftHpBar);
+		pGui->GetRootElement()->AddChild(pRightHpBar);
+		pGui->GetRootElement()->AddChild(pLeftEnergyBar);
+		pGui->GetRootElement()->AddChild(pRightEnergyBar);
+
 
 		return true;
+	}
+
+	float fHp1, fHp2, fEnergy1, fEnergy2;
+
+	void Resize()
+	{
+		IntVec vWinSize = SDLManager::GetSize();
+
+		pCamera1->SetRect(IntRect(0, 0, vWinSize.x / 2, vWinSize.y));
+		pCamera2->SetRect(IntRect(vWinSize.x / 2, 0, vWinSize.x / 2, vWinSize.y));
+		pGui->SetRect(IntRect(0, 0, vWinSize.x, vWinSize.y));
+
+		for (CGuiImage* pImg : { pLeftBar1Bg ,pLeftBar2Bg ,pRightBar1Bg ,pRightBar2Bg })
+		{
+			pImg->SetSize(IntVec((int)(vWinSize.x*0.3f), (int)(vWinSize.y*0.05f)));
+		}
+
+		auto rat1 = m_rat1.lock();
+		auto rat2 = m_rat2.lock();
+		if (rat1)
+		{
+			fHp1 = rat1->GetHealthRate();
+			fEnergy1 = rat1->GetEnergyRate();
+		}
+		else
+		{
+			fHp1 = 0;
+		}
+
+		if (rat2)
+		{
+			fHp2 = rat2->GetHealthRate();
+			fEnergy2 = rat2->GetEnergyRate();
+		}
+		else
+		{
+			fHp2 = 0;
+		}
+
+		pLeftHpBar->SetSize(IntVec((int)(vWinSize.x*0.3f*fHp1), (int)(vWinSize.y*0.05f)));
+		pLeftEnergyBar->SetSize(IntVec((int)(vWinSize.x*0.3f*fEnergy1), (int)(vWinSize.y*0.05f)));
+		pRightHpBar->SetSize(IntVec((int)(vWinSize.x*0.3f*fHp2), (int)(vWinSize.y*0.05f)));
+		pRightEnergyBar->SetSize(IntVec((int)(vWinSize.x*0.3f*fEnergy2), (int)(vWinSize.y*0.05f)));
+
+
+		IntVec l1((int)(vWinSize.x*0.1f), (int)(vWinSize.y*0.8f));
+		IntVec l2((int)(vWinSize.x*0.1f), (int)(vWinSize.y*0.9f));
+		IntVec r1((int)(vWinSize.x*0.6f), (int)(vWinSize.y*0.8f));
+		IntVec r2((int)(vWinSize.x*0.6f), (int)(vWinSize.y*0.9f));
+
+		pLeftBar1Bg->SetPosition(l1);
+		pLeftHpBar->SetPosition(l1);
+		pLeftBar2Bg->SetPosition(l2);
+		pLeftEnergyBar->SetPosition(l2);
+
+		pRightBar1Bg->SetPosition(r1);
+		pRightHpBar->SetPosition(r1);
+		pRightBar2Bg->SetPosition(r2);
+		pRightEnergyBar->SetPosition(r2);
 	}
 
 	virtual void Update()
 	{
 		root->UpdateInternal(Vec(0, 0));
 
-		IntVec vWinSize = SDLManager::GetSize();
-
-		pCamera1->SetRect(IntRect(0, 0, vWinSize.x / 2, vWinSize.y));
-		pCamera2->SetRect(IntRect(vWinSize.x / 2, 0, vWinSize.x / 2, vWinSize.y));
+		Resize();
 
 		auto rat1 = m_rat1.lock();
 		if (rat1)
