@@ -44,6 +44,11 @@ void CSpriteRenderLayer::RemoveSprite(std::weak_ptr<CSprite> pSprite)
 	
 }
 
+void CSpriteRenderLayer::ClearSprites()
+{
+	m_aSprites.clear();
+}
+
 
 void CCameraRenderLayer::Render()
 {

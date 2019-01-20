@@ -34,6 +34,7 @@ public:
 	virtual void HandleEvents() override {};
 	void AddSprite(std::weak_ptr<CSprite> pSprite);
 	void RemoveSprite(std::weak_ptr<CSprite> pSprite);
+	void ClearSprites();
 protected:
 	std::vector<std::weak_ptr<CSprite>> m_aSprites; //ezen a struturan meg sokat lehetne optimalizalni
 

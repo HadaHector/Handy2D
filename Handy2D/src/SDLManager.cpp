@@ -70,6 +70,13 @@ public:
 		case SDL_MOUSEWHEEL:
 			break;
 
+		case SDL_WINDOWEVENT:
+			if (Event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+			{
+				SDLManager::GetGameLogic()->OnResize();
+			}
+			break;
+
 		default:
 			break;
 		}
@@ -107,6 +114,10 @@ void SDLManager::SetWindowMaxSize(IntVec size)
 	SDL_SetWindowMaximumSize(Instance.m_pWindow, size.x, size.y);
 }
 
+CGameLogic* SDLManager::GetGameLogic()
+{
+	return Instance.m_pGameLogic;
+}
 
 
 bool SDLManager::Init()

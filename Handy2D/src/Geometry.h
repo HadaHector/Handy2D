@@ -1,4 +1,5 @@
 #pragma once
+#include <math.h>
 
 struct SDL_Point;
 struct SDL_Rect;
@@ -17,7 +18,7 @@ public:
 		y += other.y;
 	}
 
-	Vec operator+(const Vec& other)
+	Vec operator+(const Vec& other) const
 	{
 		return Vec(x + other.x, y + other.y);
 	}
@@ -28,12 +29,12 @@ public:
 		y -= other.y;
 	}
 
-	Vec operator-(const Vec& other)
+	Vec operator-(const Vec& other) const
 	{
 		return Vec(x - other.x, y - other.y);
 	}
 
-	Vec operator-()
+	Vec operator-() const
 	{
 		return Vec(-x, -y);
 	}
@@ -59,10 +60,38 @@ public:
 		x = y = 0;
 	}
 
-	operator bool()
+	explicit operator bool()
 	{
 		return x != 0.0f || y != 0.0f;
 	}
+
+	float GetLength() const
+	{
+		return sqrt(x*x + y * y);
+	}
+
+	float GetLengthSq() const
+	{
+		return x * x + y * y;
+	}
+
+	Vec GetNormalized() const
+	{
+		return *this / GetLength();
+	}
+
+	void Normalize()
+	{
+		float len = GetLength();
+		x /= len;
+		y /= len;
+	}
+};
+
+template < class T >
+Vec operator*(T i, const Vec& a)
+{
+	return a * i;
 };
 
 
@@ -123,7 +152,7 @@ public:
 		x = y = 0;
 	}
 
-	operator bool()
+	explicit operator bool()
 	{
 		return x != 0 || y != 0;
 	}
@@ -133,8 +162,8 @@ class IntRect
 {
 public:
 	IntRect() {};
-	IntRect(int x, int y, int x2, int y2)
-		:m_vPos(x, y), m_vSize(x2, y2) {}
+	IntRect(int x, int y, int sizex, int sizey)
+		:m_vPos(x, y), m_vSize(sizex, sizey) {}
 	IntVec GetUpperLeft() const { return m_vPos; } 
 	IntVec GetBottomRight() const { return m_vPos + m_vSize; }
 	IntVec GetSize() const { return m_vSize; }

@@ -26,8 +26,8 @@ CImageSprite::~CImageSprite() { SDLManager::spritenum--; }
 void CImageSprite::Render(const CRenderLayer& Layer, Vec vOffset)
 {
 	SDL_Rect Rect = GetRect();
-	Rect.x += vOffset.x;
-	Rect.y += vOffset.y;
+	Rect.x += (int)vOffset.x;
+	Rect.y += (int)vOffset.y;
 	SDL_Rect Rect2 = Layer.GetRect();
 	if (!SDL_HasIntersection(&Rect2, &Rect)) return;
 

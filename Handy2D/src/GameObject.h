@@ -31,12 +31,13 @@ public:
 	void AttachGameObject(std::shared_ptr<CGameObject> pGameObject, Vec vPos);
 	void AddSocket(const std::string& sName, Vec vPos);
 	Vec GetSocketPos(const std::string& sName);
+	Vec GetSocketAbsPos(const std::string& sName);
 	void AddToLayer(CSpriteRenderLayer* pLayer);
 	void DetachParent();
 	CGameObject* GetParent() { return m_pParent;}
 	Vec GetAbsolutePos();
 	Vec GetPos() { return m_vPosition; }
-	void Move(const Vec& vec) { m_vPosition += vec; }
+	void Move(const Vec& vec);
 	void AddMovement(const Vec& vec);
 	void DestroyChild(CGameObject* pChild);
 	void DestroySelf();
@@ -44,6 +45,7 @@ public:
 	void AddCollider(const IntRect& rect, bool bDynamic, int flags);
 
 
+	virtual void OnMove(const Vec& from, const Vec& to) {}
 	virtual void OnOverlap(const SOverlapEvent& event) {}
 	virtual void OnCollide(const SCollisionEvent& event) {}
 	virtual void Update() {};

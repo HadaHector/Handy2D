@@ -35,6 +35,7 @@ public:
 	static void SetWindowMinSize(IntVec size);
 	static void SetWindowMaxSize(IntVec size);
 	static IntVec GetSize();
+	static CGameLogic* GetGameLogic();
 	static int drawnum;
 	static int spritenum;
 

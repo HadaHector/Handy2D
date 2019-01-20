@@ -18,5 +18,13 @@
     <ClCompile Include="Rats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RatGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RatGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

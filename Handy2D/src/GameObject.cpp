@@ -44,6 +44,16 @@ void CGameObject::UpdateInternal(const Vec& vPos)
 	}
 }
 
+void CGameObject::Move(const Vec& vec)
+{ 
+	Vec abs = GetAbsolutePos();
+	Vec newpos = m_vPosition + vec;
+	m_vPosition = newpos;
+	
+	OnMove(abs, abs + vec);
+}
+
+
 void CGameObject::AttachSprite(std::shared_ptr<CSprite> pSprite, Vec vPos, const std::vector<std::string>& aTags)
 {
 	m_aChildrenSprites.push_back({ pSprite, vPos });
@@ -83,6 +93,15 @@ Vec CGameObject::GetSocketPos(const std::string & sName)
 		return m_vPosition;
 
 	return it->second + m_vPosition;
+}
+
+Vec CGameObject::GetSocketAbsPos(const std::string & sName)
+{
+	auto it = m_mSockets.find(sName);
+	if (it == m_mSockets.end())
+		return m_vPosition;
+
+	return it->second + GetAbsolutePos();
 }
 
 void CGameObject::AddToLayer(CSpriteRenderLayer * pLayer)
