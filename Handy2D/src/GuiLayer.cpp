@@ -8,9 +8,12 @@ CGuiElement::CGuiElement() :
 
 void CGuiElement::Render()
 {
-	for (CGuiElement* elem : m_aChildren)
+	if (m_bVisible)
 	{
-		elem->Render();
+		for (CGuiElement* elem : m_aChildren)
+		{
+			elem->Render();
+		}
 	}
 }
 
@@ -184,6 +187,8 @@ void CGuiImage::Render()
 
 	m_pSprite->SetSize(m_vUsedSize);
 	m_pLayer->AddRenderData(m_pSprite,this);
+
+	CGuiElement::Render();
 }
 
 CGuiText::CGuiText() : CGuiElement()
@@ -237,6 +242,8 @@ void CGuiText::Render()
 	m_pSprite->SetPos(m_vPosition);
 	m_pSprite->SetSize(m_vSize);
 	m_pLayer->AddRenderData(m_pSprite, this);
+
+	CGuiElement::Render();
 }
 
 void CGuiText::SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign)
@@ -247,18 +254,18 @@ void CGuiText::SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign)
 
 	switch (m_eHAlign)
 	{
-	case EHA_Left: f = 0.0f;
-	case EHA_Center: f = 0.5f;
-	case EHA_Right: f = 1.0f;		
+	case EHA_Left: f = 0.0f; break;
+	case EHA_Center: f = 0.5f; break;
+	case EHA_Right: f = 1.0f; break;
 	}
 
 	m_pSprite->SetAlignX(f);
 
 	switch (m_eVAlign)
 	{
-	case EVA_Bottom: f = 1.0f;
-	case EVA_Center: f = 0.5f;
-	case EVA_Top: f = 0.0f;
+	case EVA_Bottom: f = 1.0f; break;
+	case EVA_Center: f = 0.5f; break;
+	case EVA_Top: f = 0.0f; break;
 	}
 
 	m_pSprite->SetAlignY(f);
@@ -284,6 +291,8 @@ void CGuiTextbox::Render()
 	m_pSprite->SetPos(m_vPosition);
 	m_pSprite->SetSize(m_vSize);
 	m_pLayer->AddRenderData(m_pSprite, this);
+
+	CGuiElement::Render();
 }
 
 
@@ -303,19 +312,27 @@ void CGuiTextbox::SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign)
 
 	switch (eHAlign)
 	{
-	case EHA_Left: f = 0.0f;
-	case EHA_Center: f = 0.5f;
-	case EHA_Right: f = 1.0f;
+	case EHA_Left: f = 0.0f; break;
+	case EHA_Center: f = 0.5f; break;
+	case EHA_Right: f = 1.0f; break;
 	}
 
 	m_pSprite->SetHAlign(f);
 
 	switch (eVAlign)
 	{
-	case EVA_Bottom: f = 1.0f;
-	case EVA_Center: f = 0.5f;
-	case EVA_Top: f = 0.0f;
+	case EVA_Bottom: f = 1.0f; break;
+	case EVA_Center: f = 0.5f; break;
+	case EVA_Top: f = 0.0f; break;
 	}
 
 	m_pSprite->SetVAlign(f);
+	m_pSprite->Invalidate();
+}
+
+void CGuiTextbox::SetSize(const IntVec& size)
+{ 
+	m_vSize = size; 
+	m_eValid = EUnknown; 
+	m_pSprite->Invalidate();
 }

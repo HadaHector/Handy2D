@@ -10,13 +10,14 @@
 #include "CollisionManager.h"
 
 
-#define MAP_SIZE_X 200
+#define MAP_SIZE_X 300
 #define MAP_SIZE_Y 200
 #define CIKK_CAKK_AMP 6
 #define CIKK_CAKK_FREQ 0.12
 #define CIKK_CAKK2_AMP 2
 #define CIKK_CAKK2_FREQ 0.8
-#define BASE_SIZE 14
+#define BASE_SIZE_X 18
+#define BASE_SIZE_Y 17
 #define TILE_SIZE 16
 
 enum ETile
@@ -29,6 +30,22 @@ enum ETile
 	ET_Rock
 };
 
+
+class CBase : public CGameObject
+{
+	int m_nPlayer;
+	std::shared_ptr<CImageSprite> m_pBase;
+public:
+	void SetPlayer(int nPlayer);
+	virtual void Init();
+};
+
+class CRechargeArea : public CGameObject
+{
+public:
+	virtual void Init();
+	int m_nPlayer;
+};
 
 class CProjectile : public CGameObject
 {
@@ -60,6 +77,8 @@ private:
 	float m_fHealth = m_fMaxHealth;
 	float m_fEnergy = m_fMaxEnergy;
 	Vec m_vDir;
+
+	bool m_bDead = false;
 public:
 
 	float GetHealthRate() { return m_fHealth / m_fMaxHealth; }
@@ -72,7 +91,7 @@ public:
 	void Freeze(float time);
 
 	virtual void OnMove(const Vec& from, const Vec& to) override;
-
+	virtual void OnOverlap(const SOverlapEvent& Event) override;
 	int m_nPlayer = 0;
 
 };
@@ -98,7 +117,7 @@ class CRatGame : public CGameLogic
 	std::shared_ptr<CGameObject> root;
 	std::weak_ptr<CRat> m_rat1;
 	std::weak_ptr<CRat> m_rat2;
-	std::shared_ptr<CImageSprite> pBg;
+	std::vector<std::shared_ptr<CImageSprite>> m_aBgs;
 	CCameraRenderLayer *pCamera1, *pCamera2;
 	CCameraRenderLayer *pBgCamera1, *pBgCamera2;
 	CDirtLayer m_DirtLayer1, m_DirtLayer2;
@@ -106,6 +125,12 @@ class CRatGame : public CGameLogic
 
 	CGuiImage *pLeftBar1Bg, *pLeftBar2Bg, *pRightBar1Bg, *pRightBar2Bg;
 	CGuiImage *pLeftHpBar, *pLeftEnergyBar, *pRightHpBar, *pRightEnergyBar;
+	CGuiImage *pLeftEnergyIcon, *pLeftHealthIcon, *pRightEnergyIcon, *pRightHealthIcon;
+	CGuiImage *pMenuBg, *pTitleImg, *pStartButton;
+	CGuiTextbox *pPlayerText1, *pPlayerText2, *pStartText;
+
+	CGuiText *pScore, *pStart;
+	CGuiImage* pBg[5];
 
 	ETile mapdata[MAP_SIZE_Y][MAP_SIZE_X];
 
@@ -114,11 +139,21 @@ class CRatGame : public CGameLogic
 	static CRatGame* m_pInstance;
 
 	IntVec m_vSpawnPos1, m_vSpawnPos2;
+
+	int scores[2] = { 0,0 };
+
+	double roundrestarttimer = -1;
+	IntVec vExplosion;
+	double explosionTimer = -1;
+
+	CGuiElement* pMenu;
+
 public:
 	CRatGame() { m_pInstance = this; }
 	ETile GetTile(IntVec pos);
 	ETile GetTileAtPos(Vec pos);
 	void BreakTile(IntVec pos);
+	void BreakTileAtPos(Vec pos);
 	void SetTile(IntVec pos, ETile tile);
 	void SetTileAtPos(Vec pos, ETile tile);
 	virtual bool Load() override;
@@ -127,5 +162,10 @@ public:
 	virtual void Update() override;
 	virtual void OnResize() override;
 	static CRatGame* GetInstance() { return m_pInstance; }
+	void AddScore(int nPlayer);
+	void UpdateScore();
+	void SpawnRats();
+	void StartExplosion(IntVec pos);
+	void Explode(float strength, int count);
 };
 

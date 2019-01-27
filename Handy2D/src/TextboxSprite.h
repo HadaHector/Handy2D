@@ -41,6 +41,7 @@ public:
 	bool IsDynamic() const { return m_bDynamic; }
 	void SetHAlign(float fAlign);
 	void SetVAlign(float fAlign);
+	void Invalidate() { m_bGenerated = false; }
 private:
 
 	std::vector<STextBlock> m_aBlocks;

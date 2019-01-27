@@ -1,5 +1,14 @@
 #include "RenderLayer.h"
 
+bool CRenderLayer::HasTag(const std::string& sTag) const
+{
+	for (auto&& tag : m_aTags) 
+	{ 
+		if (tag == sTag) return true;
+	} 
+	return false;
+}
+
 void CSpriteRenderLayer::Render()
 {
 	if (m_bVisible)
@@ -75,3 +84,4 @@ void CCameraRenderLayer::Render()
 		}
 	}
 }
+

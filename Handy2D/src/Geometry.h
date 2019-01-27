@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#include <cmath>
 
 struct SDL_Point;
 struct SDL_Rect;
@@ -51,6 +52,13 @@ public:
 		return Vec((float)(x * f), (float)(y * f));
 	}
 
+	template< class T >
+	void operator*=(T f)
+	{
+		x *= f;
+		y *= f;
+	}
+
 	operator SDL_Point() const;
 
 	operator IntVec() const;
@@ -67,7 +75,7 @@ public:
 
 	float GetLength() const
 	{
-		return sqrt(x*x + y * y);
+		return (float) sqrt(x*x + y * y);
 	}
 
 	float GetLengthSq() const
@@ -85,6 +93,11 @@ public:
 		float len = GetLength();
 		x /= len;
 		y /= len;
+	}
+
+	static Vec FromAngle(float fAngle)
+	{
+		return Vec(std::cosf(fAngle), std::sinf(fAngle));
 	}
 };
 
@@ -174,6 +187,12 @@ public:
 
 	operator SDL_Rect() const;
 	IntRect(const SDL_Rect& rect);
+
+	template< class T >
+	IntRect operator*(T f) const
+	{
+		return IntRect((int)(m_vPos.x * f), (int)(m_vPos.y * f), (int)(m_vSize.x * f), (int)(m_vSize.y * f));
+	}
 
 private:
 	IntVec m_vPos, m_vSize;

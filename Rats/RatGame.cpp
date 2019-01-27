@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "RatGame.h"
 #include "SDLManager.h"
 #include "RenderLayer.h"
@@ -9,8 +9,62 @@
 #include "GuiLayer.h"
 #include <stdlib.h>
 #include "CollisionManager.h"
+#include <random>
+
+const double PI = 3.141592653589793238463;
+
+namespace {
+	std::random_device r;
+	std::default_random_engine e1(r());
+	std::uniform_int_distribution<int> random_4(0, 3);
+	std::uniform_real_distribution<float> random_float(0, 1);
+	std::uniform_int_distribution<int> random_bool(0, 1);
+}
 
 CRatGame* CRatGame::m_pInstance;
+
+
+void CBase::SetPlayer(int nPlayer)
+{
+	m_nPlayer = nPlayer;
+	if (m_pBase)
+	{
+		m_pBase->SetTexture(CTexture::GetTexture(m_nPlayer ? "resources/base_blue.png" : "resources/base_green.png"));
+		m_pBase->SetSize(144 * 2, 176 * 2);
+	}
+}
+
+void CBase::Init()
+{
+	CTexture::LoadTexture("resources/base_bg.png");
+	CTexture::LoadTexture("resources/base_blue.png");
+	CTexture::LoadTexture("resources/base_green.png");
+	
+	std::shared_ptr<CImageSprite> pBg = std::make_shared<CImageSprite>();
+	pBg->SetTexture(CTexture::GetTexture("resources/base_bg.png"));
+	pBg->SetSize(144*2,176*2);
+	AttachSprite(pBg, Vec(0,0), { "bg" });
+	
+
+	m_pBase = std::make_shared<CImageSprite>();
+	m_pBase->SetTexture(CTexture::GetTexture(m_nPlayer ? "resources/base_blue.png" : "resources/base_green.png"));
+	m_pBase->SetSize(144 * 2, 176 * 2);
+	AttachSprite(m_pBase, Vec(0,0), { "camera" });
+
+	AddCollider(IntRect(0, 6, 51, 35) * 2, false, OVERLAP | COLLIDE);
+	AddCollider(IntRect(93, 6, 51, 35) * 2, false, OVERLAP | COLLIDE);
+	AddCollider(IntRect(0, 141, 51, 35) * 2, false, OVERLAP | COLLIDE);
+	AddCollider(IntRect(93, 141, 51, 35) * 2, false, OVERLAP | COLLIDE);
+	AddCollider(IntRect(0, 41, 9, 100) * 2, false, OVERLAP | COLLIDE);
+	AddCollider(IntRect(135, 42, 9, 100) * 2, false, OVERLAP | COLLIDE);
+}
+
+
+
+void CRechargeArea::Init()
+{
+	AddCollider(IntRect(0, 32, 144, 144) * 2, false, OVERLAP );
+}
 
 
 void CProjectile::Init()
@@ -20,7 +74,7 @@ void CProjectile::Init()
 	pSprite->SetTexture(CTexture::GetTexture("resources/projectile.png"));
 	pSprite->SetSize(8, 8);
 	AttachSprite(pSprite, Vec(-4, -4), { "camera" });
-	AddCollider(IntRect(-4, -4, 8, 8), true, OVERLAP | OVERLAP_EVENTS);
+	AddCollider(IntRect(-4, -4, 8, 8), true, OVERLAP | OVERLAP_EVENTS );
 }
 
 void CProjectile::Update()
@@ -46,10 +100,10 @@ void CProjectile::Explode(const Vec& pos)
 	static IntVec dirs[8] = { {1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1} };
 	for (IntVec dir : dirs)
 	{
-		if (rand() % 4 > 0)
+		if (random_float(e1) > 0.25f)
 		{
 			CRatGame::GetInstance()->BreakTile(coord + dir);
-			if (rand() % 3 == 0)
+			if (random_float(e1) < 0.33)
 			{
 				CRatGame::GetInstance()->BreakTile(coord + (dir * 2));
 			}
@@ -69,6 +123,7 @@ bool CProjectile::CollideTerrain(const Vec& pos)
 	{
 		Explode(pos);
 		DestroySelf();
+
 		return true;
 	}
 	return false;
@@ -102,6 +157,13 @@ void CProjectile::OnOverlap(const SOverlapEvent &event)
 		DestroySelf();
 		return;
 	}
+
+	CBase* pBase = dynamic_cast<CBase*>(event.pOther.get());
+	if (pBase)
+	{
+		DestroySelf();
+		return;
+	}
 }
 
 
@@ -123,14 +185,22 @@ void CRat::Init()
 	AttachSprite(m_pRat, Vec(-24, -24), { "camera" });
 	AddCollider(IntRect(-24, -24, 48, 48), true, OVERLAP | OVERLAP_EVENTS | COLLIDE | COLLIDE_EVENTS);
 	AddSocket("shoot", Vec(0, 0));
+	m_vDir = { -1,0 };
+	m_bDead = false;
 }
 
 void CRat::Fire()
 {
 	auto bullet = std::make_shared<CProjectile>();
-	bullet->SetSpeed(m_vDir * 1000);
+	bullet->SetSpeed(m_vDir * 500);
 	bullet->SetPlayer(m_nPlayer);
 	GetParent()->AttachGameObject(bullet, GetSocketAbsPos("shoot"));
+
+	m_fEnergy -= 0.5f;
+	if (m_fEnergy <= 0)
+	{
+		Die();
+	}
 }
 
 void CRat::Update()
@@ -139,10 +209,10 @@ void CRat::Update()
 	if (m_freezetimer < Time::frame)
 	{
 		double time = Time::frame - m_freezetimer;		
-		bool bLeft = Input::GetKey(m_nPlayer ? KEY_KP_4 : KEY_A).active;
-		bool bRight = Input::GetKey(m_nPlayer ? KEY_KP_6 : KEY_D).active;
-		bool bUp = Input::GetKey(m_nPlayer ? KEY_KP_8 : KEY_W).active;
-		bool bDown = Input::GetKey(m_nPlayer ? KEY_KP_5 : KEY_S).active;
+		bool bLeft = Input::GetKey(m_nPlayer ? KEY_LEFT : KEY_A).active; //KEY_KP_4
+		bool bRight = Input::GetKey(m_nPlayer ? KEY_RIGHT : KEY_D).active; //KEY_KP_6
+		bool bUp = Input::GetKey(m_nPlayer ? KEY_UP : KEY_W).active; //KEY_KP_8
+		bool bDown = Input::GetKey(m_nPlayer ? KEY_DOWN : KEY_S).active; //KEY_KP_5
 
 		std::string tex;
 		if (bUp)
@@ -204,7 +274,7 @@ void CRat::Update()
 
 	m_freezetimer = std::max(0.0f, (float)( m_freezetimer - Time::frame));
 
-	if (Input::GetKey(m_nPlayer ? KEY_KP_ENTER : KEY_SPACE).active && m_cooldown == 0)
+	if ((m_nPlayer ? (Input::GetKey(KEY_KP_ENTER).active || Input::GetKey(KEY_RETURN).active) : Input::GetKey(KEY_SPACE).active) && m_cooldown == 0)
 	{
 		Fire();
 		m_cooldown = 0.15;
@@ -233,7 +303,14 @@ void CRat::Update()
 
 void CRat::Die()
 {
-	DestroySelf();
+	if (!m_bDead)
+	{
+		DestroySelf();
+		CRatGame::GetInstance()->AddScore(m_nPlayer ? 0 : 1);
+		CRatGame::GetInstance()->StartExplosion(GetPos());
+		m_bDead = true;
+	}
+	
 }
 
 void CRat::Damage(int nDmg)
@@ -278,6 +355,16 @@ void CRat::Freeze(float time)
 	m_freezetimer += time;
 }
 
+void CRat::OnOverlap(const SOverlapEvent& Event)
+{
+	CRechargeArea* pArea = dynamic_cast<CRechargeArea*>(Event.pOther.get());
+	if (pArea && pArea->m_nPlayer == m_nPlayer)
+	{
+		m_fEnergy = std::min(m_fMaxEnergy, m_fEnergy + (float)Time::frame * 5.0f);
+		m_fHealth = std::min(m_fMaxHealth, m_fHealth + (float)Time::frame * 2.0f);
+	}
+}
+
 ETile CRatGame::GetTile(IntVec pos)
 {
 	if (pos.x < 0 || pos.y < 0 || pos.x >= MAP_SIZE_X || pos.y >= MAP_SIZE_Y)
@@ -299,6 +386,12 @@ void CRatGame::BreakTile(IntVec pos)
 		mapdata[pos.y][pos.x] = ET_Empty;
 	}
 	
+}
+
+void CRatGame::BreakTileAtPos(Vec pos)
+{
+	IntVec coord = pos / TILE_SIZE;
+	BreakTile(coord);
 }
 
 void CRatGame::SetTile(IntVec pos, ETile tile)
@@ -334,7 +427,15 @@ bool CRatGame::Load()
 	m_DirtLayer1.pDirtLayer = new CSpriteRenderLayer(IntRect(0, 0, 512, 512));
 	m_DirtLayer2.pDirtLayer = new CSpriteRenderLayer(IntRect(512, 0, 512, 512));
 	pCamera1->AddTag("camera");
+	pCamera1->SetName("main1");
 	pCamera2->AddTag("camera");
+	pCamera2->SetName("main2");
+	pBgCamera1->AddTag("bg");
+	pBgCamera2->AddTag("bg");
+	pBgCamera1->SetName("bg1");
+	pBgCamera2->SetName("bg2");
+	m_DirtLayer1.pDirtLayer->SetName("dirt1");
+	m_DirtLayer2.pDirtLayer->SetName("dirt2");
 	pCamera2->SetPosition(IntVec(0, 0));
 	SDLManager::Instance.AddLayer(pBgCamera1);
 	SDLManager::Instance.AddLayer(pBgCamera2);
@@ -344,40 +445,40 @@ bool CRatGame::Load()
 	SDLManager::Instance.AddLayer(pCamera2);
 
 	CTexture::LoadTexture("resources/bg.png");
-	pBg = std::make_shared<CImageSprite>();
-	pBg->SetTexture(CTexture::GetTexture("resources/bg.png"));
-	pBg->SetSize(2048, 2048);
-	pBgCamera1->AddSprite(pBg);
-	pBgCamera2->AddSprite(pBg);
+
+	for (int x = -1; x < 3; ++x)
+	{
+		for (int y = -1; y < 3; ++y)
+		{
+			std::shared_ptr<CImageSprite> pBg = std::make_shared<CImageSprite>();
+			pBg->SetTexture(CTexture::GetTexture("resources/bg.png"));
+			pBg->SetSize(2048, 2048);
+			pBg->SetPos(Vec(2048 * x, 2048 * y));
+			pBgCamera1->AddSprite(pBg);
+			pBgCamera2->AddSprite(pBg);
+			m_aBgs.push_back(pBg);
+		}
+	}
+
 
 	root = std::make_shared<CGameObject>();
 
 	Vec Size = SDLManager::Instance.GetSize();
-
-	std::shared_ptr<CRat> rat1;
-	std::shared_ptr<CRat> rat2;
-	rat1 = std::make_shared<CRat>();
-	rat1->m_nPlayer = 0;
-	root->AttachGameObject(rat1, Vec(0, 0));
-	m_rat1 = rat1;
-
-	rat2 = std::make_shared<CRat>();
-	rat2->m_nPlayer = 1;
-	root->AttachGameObject(rat2, Vec(0, 0));
-	m_rat2 = rat2;
 
 
 	for (int y = 0; y < MAP_SIZE_Y; ++y)
 	{
 		for (int x = 0; x < MAP_SIZE_X; ++x)
 		{
-			mapdata[y][x] = (ETile)(rand() % 4 + ET_Dirt1);
+			mapdata[y][x] = (ETile)(random_4(e1) + ET_Dirt1);
 		}
 	}
 
+	
+
 	//top
 	{
-		float offset = rand() % 1000 / 6.28f;
+		float offset = random_float(e1) / 6.28f;
 		for (int x = 0; x < MAP_SIZE_X; ++x)
 		{
 			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + x * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + x * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
@@ -390,7 +491,7 @@ bool CRatGame::Load()
 
 	//bottom
 	{
-		float offset = rand() % 1000 / 6.28f;
+		float offset = random_float(e1) / 6.28f;
 		for (int x = 0; x < MAP_SIZE_X; ++x)
 		{
 			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + x * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + x * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
@@ -403,7 +504,7 @@ bool CRatGame::Load()
 
 	//left
 	{
-		float offset = rand() % 1000 / 6.28f;
+		float offset = random_float(e1) / 6.28f;
 		for (int y = 0; y < MAP_SIZE_Y; ++y)
 		{
 			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + y * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + y * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
@@ -416,7 +517,7 @@ bool CRatGame::Load()
 
 	//right
 	{
-		float offset = rand() % 1000 / 6.28f;
+		float offset = random_float(e1) / 6.28f;
 		for (int y = 0; y < MAP_SIZE_Y; ++y)
 		{
 			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + y * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + y * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
@@ -427,44 +528,65 @@ bool CRatGame::Load()
 		}
 	}
 
+	auto base1 = std::make_shared<CBase>();
+	auto base2 = std::make_shared<CBase>();
+	auto recharge1 = std::make_shared<CRechargeArea>();
+	auto recharge2 = std::make_shared<CRechargeArea>();
+
 	//bases
 	IntVec pos = { CIKK_CAKK_AMP * 2, CIKK_CAKK_AMP * 2 };
-	IntVec size = { MAP_SIZE_X - CIKK_CAKK_AMP * 4 - BASE_SIZE, MAP_SIZE_Y - CIKK_CAKK_AMP * 4 - BASE_SIZE };
+	IntVec size = { MAP_SIZE_X - CIKK_CAKK_AMP * 4 - BASE_SIZE_X, MAP_SIZE_Y - CIKK_CAKK_AMP * 4 - BASE_SIZE_Y };
 	{
 		IntVec size2 = { size.x / 2 - CIKK_CAKK_AMP * 2, size.y };
-		IntVec basepos = IntVec(pos.x + size2.x * (float)(rand() % 1000 / 1000.0f), pos.y + size2.y * (float)(rand() % 1000 / 1000.0f) );
-		m_vSpawnPos1 = basepos + IntVec(BASE_SIZE / 2, BASE_SIZE / 2);
-		for (int x = 0; x < BASE_SIZE; ++x)
+		IntVec basepos = IntVec(pos.x + size2.x * (float)(random_float(e1)), pos.y + size2.y * (float)(random_float(e1) ) );
+		m_vSpawnPos1 = basepos + IntVec(BASE_SIZE_X / 2, BASE_SIZE_Y / 2);
+		for (int x = 0; x < BASE_SIZE_X; ++x)
 		{
-			for (int y = 0; y < BASE_SIZE; ++y)
+			for (int y = 0; y < BASE_SIZE_Y; ++y)
 			{
 				SetTile(basepos + IntVec(x, y), ET_Empty);
 			}
 		}
+		root->AttachGameObject(base1, (basepos - IntVec(1, 6)) * TILE_SIZE);
+		root->AttachGameObject(recharge1, (basepos - IntVec(1,6)) * TILE_SIZE);
 	}
 	{
 		IntVec size2 = { size.x / 2 - CIKK_CAKK_AMP * 2, size.y };
 		IntVec pos2 = {pos.x + size.x / 2 + CIKK_CAKK_AMP * 2 ,pos.y};
-		IntVec basepos = IntVec(pos2.x + size2.x * (float)(rand() % 1000 / 1000.0f), pos2.y + size2.y * (float)(rand() % 1000 / 1000.0f));
-		m_vSpawnPos2 = basepos + IntVec(BASE_SIZE / 2, BASE_SIZE / 2);
-		for (int x = 0; x < BASE_SIZE; ++x)
+		IntVec basepos = IntVec(pos2.x + size2.x * (float)(random_float(e1) ), pos2.y + size2.y * (float)(random_float(e1) ));
+		m_vSpawnPos2 = basepos + IntVec(BASE_SIZE_X / 2, BASE_SIZE_Y / 2);
+		for (int x = 0; x < BASE_SIZE_X; ++x)
 		{
-			for (int y = 0; y < BASE_SIZE; ++y)
+			for (int y = 0; y < BASE_SIZE_Y; ++y)
 			{
 				SetTile(basepos + IntVec(x, y), ET_Empty);
 			}
 		}
+		root->AttachGameObject(base2, (basepos - IntVec(1, 6)) * TILE_SIZE);
+		root->AttachGameObject(recharge2, (basepos - IntVec(1, 6)) * TILE_SIZE);
 	}
 
-	if (rand() % 2 == 0)
+	
+
+	if (random_bool(e1) == 0)
 	{
 		IntVec temp = m_vSpawnPos1;
 		m_vSpawnPos1 = m_vSpawnPos2;
 		m_vSpawnPos2 = temp;
+		base1->SetPlayer(1);
+		base2->SetPlayer(0);
+		recharge1->m_nPlayer = 1;
+		recharge2->m_nPlayer = 0;
+	}
+	else
+	{
+		base1->SetPlayer(0);
+		base2->SetPlayer(1);
+		recharge1->m_nPlayer = 0;
+		recharge2->m_nPlayer = 1;
 	}
 
-	rat1->SetPosition(m_vSpawnPos1 * TILE_SIZE);
-	rat2->SetPosition(m_vSpawnPos2 * TILE_SIZE);
+	SpawnRats();
 
 
 
@@ -475,8 +597,16 @@ bool CRatGame::Load()
 	CTexture::LoadTexture("resources/barbg.png");
 	CTexture::LoadTexture("resources/hpbar.png");
 	CTexture::LoadTexture("resources/energybar.png");
+	CTexture::LoadTexture("resources/energy.png");
+	CTexture::LoadTexture("resources/health.png");
+	CTexture::LoadTexture("resources/black.png");
 
-
+	for (int i = 0; i < 5; ++i)
+	{
+		pBg[i] = new CGuiImage();
+		pBg[i]->SetImage("resources/black.png");
+		pGui->GetRootElement()->AddChild(pBg[i]);
+	}
 
 	pLeftBar1Bg = new CGuiImage();
 	pLeftBar1Bg->SetImage("resources/barbg.png");
@@ -496,6 +626,15 @@ bool CRatGame::Load()
 	pRightEnergyBar = new CGuiImage();
 	pRightEnergyBar->SetImage("resources/energybar.png");
 
+	pLeftEnergyIcon = new CGuiImage();
+	pLeftEnergyIcon->SetImage("resources/energy.png");
+	pRightEnergyIcon = new CGuiImage();
+	pRightEnergyIcon->SetImage("resources/energy.png");
+	pLeftHealthIcon = new CGuiImage();
+	pLeftHealthIcon->SetImage("resources/health.png");
+	pRightHealthIcon = new CGuiImage();
+	pRightHealthIcon->SetImage("resources/health.png");
+
 	pGui->GetRootElement()->AddChild(pLeftBar1Bg);
 	pGui->GetRootElement()->AddChild(pLeftBar2Bg);
 	pGui->GetRootElement()->AddChild(pRightBar1Bg);
@@ -504,7 +643,97 @@ bool CRatGame::Load()
 	pGui->GetRootElement()->AddChild(pRightHpBar);
 	pGui->GetRootElement()->AddChild(pLeftEnergyBar);
 	pGui->GetRootElement()->AddChild(pRightEnergyBar);
+	pGui->GetRootElement()->AddChild(pLeftEnergyIcon);
+	pGui->GetRootElement()->AddChild(pRightEnergyIcon);
+	pGui->GetRootElement()->AddChild(pLeftHealthIcon);
+	pGui->GetRootElement()->AddChild(pRightHealthIcon);
 
+	pScore = new CGuiText();
+	pScore->SetFont("consolab.ttf",48);
+	pScore->SetAlign(EHA_Center, EVA_Center);
+	pScore->SetColor(Color(255,255,255,0));
+	pScore->SetText("0:0");
+	pGui->GetRootElement()->AddChild(pScore);
+
+
+	pMenu = new CGuiElement();
+	pGui->GetRootElement()->AddChild(pMenu);
+
+	pMenuBg = new CGuiImage();
+	pMenuBg->SetImage("resources/bg.png");
+	pMenuBg->SetPosition(IntVec(0, 0));
+	pMenu->AddChild(pMenuBg);
+	
+	CTexture::LoadTexture("resources/title.png");
+	CTexture::LoadTexture("resources/button.png");
+
+	pTitleImg = new CGuiImage();
+	pTitleImg->SetImage("resources/title.png");
+	pTitleImg->SetSize(IntVec(512,256)*2);
+	pTitleImg->SetPosition(IntVec(0, 0));
+	pMenu->AddChild(pTitleImg);
+
+	{
+		pPlayerText1 = new CGuiTextbox();
+		STextBlock b1;
+		b1.SetFont("consolab.ttf");
+		b1.SetFontSize(32);
+		b1.SetColor(Color(100, 255, 100, 0));
+		b1.SetText("Player 1\n");
+
+		STextBlock b2;
+		b2.SetFont("consolab.ttf");
+		b2.SetFontSize(24);
+		b2.SetColor(Color(255, 255, 255, 0));
+		b2.SetText("Move: WSAD\nFire: Space");
+
+		pPlayerText1->AddBlock(b1);
+		pPlayerText1->AddBlock(b2);
+		pPlayerText1->SetAlign(EHA_Center, EVA_Center);
+		pPlayerText1->SetSize(IntVec(300, 200));
+		pPlayerText1->SetPosition(IntVec(50, 300));
+		pMenu->AddChild(pPlayerText1);
+	}
+
+	{
+		pPlayerText2 = new CGuiTextbox();
+		STextBlock b1;
+		b1.SetFont("consolab.ttf");
+		b1.SetFontSize(32);
+		b1.SetColor(Color(0x3ab1ff00));
+		b1.SetText("Player 2\n");
+
+		STextBlock b2;
+		b2.SetFont("consolab.ttf");
+		b2.SetFontSize(24);
+		b2.SetColor(Color(255, 255, 255, 0));
+		b2.SetText("Move: Arrows\nFire: Enter");
+
+		pPlayerText2->AddBlock(b1);
+		pPlayerText2->AddBlock(b2);
+		pPlayerText2->SetAlign(EHA_Center, EVA_Center);
+		pPlayerText2->SetSize(IntVec(300, 200));
+		pPlayerText2->SetPosition(IntVec(650, 300));
+		pMenu->AddChild(pPlayerText2);
+	}
+
+
+	pStartButton = new CGuiImage();
+	pStartButton->SetImage("resources/button.png");
+	pStartButton->SetSize(IntVec(256, 128));
+	pMenu->AddChild(pStartButton);
+
+	pStartButton->AddClickEventListener([=](SClickEvent& Event) {
+		pMenu->SetVisible(false);
+	});
+
+	pStart = new CGuiText();
+	pStart->SetText("Start");
+	pStart->SetFont("consolab.ttf",32);
+	pStart->SetSize(IntVec(256, 128));
+	pStart->SetAlign(EHA_Center, EVA_Center);
+	pStart->SetColor(Color(255, 255, 255, 0));
+	pStartButton->AddChild(pStart);
 
 	return true;
 }
@@ -514,16 +743,34 @@ void CRatGame::Resize()
 {
 	IntVec vWinSize = SDLManager::GetSize();
 
-	pBgCamera1->SetRect(IntRect(0, 0, vWinSize.x / 2, vWinSize.y));
-	pBgCamera2->SetRect(IntRect(vWinSize.x / 2, 0, vWinSize.x / 2, vWinSize.y));
-	m_DirtLayer1.pDirtLayer->SetRect(IntRect(0, 0, vWinSize.x / 2, vWinSize.y));
-	m_DirtLayer2.pDirtLayer->SetRect(IntRect(vWinSize.x / 2, 0, vWinSize.x / 2, vWinSize.y));
-	pCamera1->SetRect(IntRect(0, 0, vWinSize.x / 2, vWinSize.y));
-	pCamera2->SetRect(IntRect(vWinSize.x / 2, 0, vWinSize.x / 2, vWinSize.y));
+	pBgCamera1->SetRect(IntRect(0, 0, vWinSize.x / 2, vWinSize.y*0.85));
+	pBgCamera2->SetRect(IntRect(vWinSize.x / 2, 0, vWinSize.x / 2, vWinSize.y*0.85));
+	m_DirtLayer1.pDirtLayer->SetRect(IntRect(0, 0, vWinSize.x / 2, vWinSize.y*0.85));
+	m_DirtLayer2.pDirtLayer->SetRect(IntRect(vWinSize.x / 2, 0, vWinSize.x / 2, vWinSize.y*0.85));
+	pCamera1->SetRect(IntRect(0, 0, vWinSize.x / 2, vWinSize.y*0.85));
+	pCamera2->SetRect(IntRect(vWinSize.x / 2, 0, vWinSize.x / 2, vWinSize.y*0.85));
 	pGui->SetRect(IntRect(0, 0, vWinSize.x, vWinSize.y));
+	pMenuBg->SetSize(vWinSize);
+	pTitleImg->SetPosition(IntVec((vWinSize.x - pTitleImg->GetSize().x)/2, 0));
 
-	m_DirtLayer1.OnResize();
-	m_DirtLayer2.OnResize();
+	pPlayerText1->SetSize(IntVec(vWinSize.x/2, vWinSize.y/3));
+	pPlayerText1->SetPosition(IntVec(0, vWinSize.y /3*2));
+	pPlayerText2->SetSize(IntVec(vWinSize.x / 2, vWinSize.y / 3));
+	pPlayerText2->SetPosition(IntVec(vWinSize.x / 2, vWinSize.y / 3 * 2));
+
+	pStartButton->SetPosition(IntVec((vWinSize.x - pStartButton->GetSize().x) / 2, vWinSize.y - 250));
+	pStart->SetPosition(IntVec((vWinSize.x - pStartButton->GetSize().x) / 2, vWinSize.y - 250));
+
+	pBg[0]->SetSize(Vec(vWinSize.x, vWinSize.y*0.02f));
+	pBg[0]->SetPosition(Vec(0, 0));
+	pBg[1]->SetSize(Vec(vWinSize.x*0.01f, vWinSize.y));
+	pBg[1]->SetPosition(Vec(0, 0));
+	pBg[2]->SetSize(Vec(vWinSize.x*0.03f, vWinSize.y));
+	pBg[2]->SetPosition(Vec(vWinSize.x*0.49, 0));
+	pBg[3]->SetSize(Vec(vWinSize.x*0.01, vWinSize.y));
+	pBg[3]->SetPosition(Vec(vWinSize.x*0.99f, 0));
+	pBg[4]->SetSize(Vec(vWinSize.x, vWinSize.y*0.17f));
+	pBg[4]->SetPosition(Vec(0, vWinSize.y*0.83f));
 
 	m_bResized = false;
 }
@@ -541,30 +788,90 @@ void CRatGame::Update()
 	if (rat1)
 	{
 		IntVec CameraPos = rat1->GetAbsolutePos() - (pCamera1->GetRect().GetSize() / 2);
-		m_DirtLayer1.Update(CameraPos);
 		pCamera1->SetPosition(CameraPos);
 		pBgCamera1->SetPosition(CameraPos);
 	}
+
+	m_DirtLayer1.Update(pCamera1->GetPosition());
 
 	auto rat2 = m_rat2.lock();
 	if (rat2)
 	{
 		IntVec CameraPos = rat2->GetAbsolutePos() - (pCamera2->GetRect().GetSize() / 2);
-		m_DirtLayer2.Update(CameraPos);
 		pCamera2->SetPosition(CameraPos);
 		pBgCamera2->SetPosition(CameraPos);
 	}
 
+	m_DirtLayer2.Update(pCamera2->GetPosition());
+
 	UpdateGui();
+
+	if (roundrestarttimer > 0)
+	{
+		roundrestarttimer -= Time::frame;
+		if (roundrestarttimer <= 0)
+		{
+			roundrestarttimer = -1;
+			if (!m_rat1.expired())
+			{
+				m_rat1.lock()->DestroySelf();
+			}
+			if (!m_rat2.expired())
+			{
+				m_rat2.lock()->DestroySelf();
+			}
+
+			SpawnRats();
+		}
+
+	}
+
+	static float explosiontimes[10] = { 0.0f, 0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.30f, 0.35f, 0.40f, 0.45f };
+	static int explosionsizes[10] = { 20,40,60,80,100,120,140,160,230,300 };
+	static int explosionnums[10] = { 10,20,30,40,50,60,70,70,60,10 };
+
+	if (explosionTimer != -1)
+	{
+
+		double newtime = explosionTimer + Time::frame;
+		for (int i = 0; i < 10; ++i)
+		{
+			if (explosionTimer <= explosiontimes[i] && newtime > explosiontimes[i])
+			{
+				Explode(explosionsizes[i], explosionnums[i]);
+			}
+		}
+		explosionTimer = newtime;
+	}
+}
+
+void CRatGame::SpawnRats()
+{
+	std::shared_ptr<CRat> rat1;
+	std::shared_ptr<CRat> rat2;
+	rat1 = std::make_shared<CRat>();
+	rat1->m_nPlayer = 0;
+	root->AttachGameObject(rat1, Vec(0, 0));
+	m_rat1 = rat1;
+
+	rat2 = std::make_shared<CRat>();
+	rat2->m_nPlayer = 1;
+	root->AttachGameObject(rat2, Vec(0, 0));
+	m_rat2 = rat2;
+	rat1->SetPosition(m_vSpawnPos1 * TILE_SIZE);
+	rat2->SetPosition(m_vSpawnPos2 * TILE_SIZE);
 }
 
 void CRatGame::UpdateGui()
 {
 	IntVec vWinSize = SDLManager::GetSize();
 
+	float iconsize = vWinSize.y*0.03f;
+	float offset = iconsize * 1.5f;
+
 	for (CGuiImage* pImg : { pLeftBar1Bg ,pLeftBar2Bg ,pRightBar1Bg ,pRightBar2Bg })
 	{
-		pImg->SetSize(IntVec((int)(vWinSize.x*0.3f), (int)(vWinSize.y*0.05f)));
+		pImg->SetSize(IntVec((int)(vWinSize.x*0.3f - offset), (int)(vWinSize.y*0.03f)));
 	}
 
 	auto rat1 = m_rat1.lock();
@@ -589,16 +896,16 @@ void CRatGame::UpdateGui()
 		fHp2 = 0;
 	}
 
-	pLeftHpBar->SetSize(IntVec((int)(vWinSize.x*0.3f*fHp1), (int)(vWinSize.y*0.05f)));
-	pLeftEnergyBar->SetSize(IntVec((int)(vWinSize.x*0.3f*fEnergy1), (int)(vWinSize.y*0.05f)));
-	pRightHpBar->SetSize(IntVec((int)(vWinSize.x*0.3f*fHp2), (int)(vWinSize.y*0.05f)));
-	pRightEnergyBar->SetSize(IntVec((int)(vWinSize.x*0.3f*fEnergy2), (int)(vWinSize.y*0.05f)));
+	pLeftHpBar->SetSize(IntVec((int)((vWinSize.x*0.3f - offset) *fHp1), (int)(vWinSize.y*0.03f)));
+	pLeftEnergyBar->SetSize(IntVec((int)((vWinSize.x*0.3f - offset)*fEnergy1), (int)(vWinSize.y*0.03f)));
+	pRightHpBar->SetSize(IntVec((int)((vWinSize.x*0.3f - offset)*fHp2), (int)(vWinSize.y*0.03f)));
+	pRightEnergyBar->SetSize(IntVec((int)((vWinSize.x*0.3f - offset)*fEnergy2), (int)(vWinSize.y*0.03f)));
 
 
-	IntVec l1((int)(vWinSize.x*0.1f), (int)(vWinSize.y*0.8f));
-	IntVec l2((int)(vWinSize.x*0.1f), (int)(vWinSize.y*0.9f));
-	IntVec r1((int)(vWinSize.x*0.6f), (int)(vWinSize.y*0.8f));
-	IntVec r2((int)(vWinSize.x*0.6f), (int)(vWinSize.y*0.9f));
+	IntVec l1((int)(vWinSize.x*0.1f + offset), (int)(vWinSize.y*0.88f));
+	IntVec l2((int)(vWinSize.x*0.1f + offset), (int)(vWinSize.y*0.94f));
+	IntVec r1((int)(vWinSize.x*0.6f + offset), (int)(vWinSize.y*0.88f));
+	IntVec r2((int)(vWinSize.x*0.6f + offset), (int)(vWinSize.y*0.94f));
 
 	pLeftBar1Bg->SetPosition(l1);
 	pLeftHpBar->SetPosition(l1);
@@ -609,11 +916,59 @@ void CRatGame::UpdateGui()
 	pRightHpBar->SetPosition(r1);
 	pRightBar2Bg->SetPosition(r2);
 	pRightEnergyBar->SetPosition(r2);
+
+	for (CGuiImage* pImg : { pLeftEnergyIcon ,pLeftHealthIcon, pRightEnergyIcon, pRightHealthIcon })
+	{
+		pImg->SetSize(IntVec((int)(iconsize), (int)(iconsize)));
+	}
+
+
+	pLeftEnergyIcon->SetPosition(IntVec((int)(vWinSize.x*0.1f), (int)(vWinSize.y*0.94f)));
+	pLeftHealthIcon->SetPosition(IntVec((int)(vWinSize.x*0.1f), (int)(vWinSize.y*0.88f)));
+	pRightEnergyIcon->SetPosition(IntVec((int)(vWinSize.x*0.6f), (int)(vWinSize.y*0.94f)));
+	pRightHealthIcon->SetPosition(IntVec((int)(vWinSize.x*0.6f), (int)(vWinSize.y*0.88f)));
+
+	pScore->SetSize(IntVec((int)vWinSize.x*0.2f,(int)(vWinSize.y*0.09)));
+	pScore->SetPosition(IntVec((int)vWinSize.x*0.4f, (vWinSize.y*0.88)));
 }
 
 void CRatGame::OnResize()
 {
 	m_bResized = true;
+}
+
+void CRatGame::AddScore(int nPlayer)
+{
+	scores[nPlayer]++;
+	UpdateScore();
+	roundrestarttimer = 5;
+}
+
+
+void CRatGame::UpdateScore()
+{
+	pScore->SetText(std::to_string(scores[0]) + ":" + std::to_string(scores[1]));
+}
+
+void CRatGame::StartExplosion(IntVec pos)
+{
+	vExplosion = pos;
+	explosionTimer = 0;
+}
+
+void CRatGame::Explode(float strength, int count)
+{
+	for (int i = 0; i < count; ++i)
+	{
+		Vec dir = Vec::FromAngle(random_float(e1) * PI * 2);
+		int nLen = (int)(random_float(e1)*strength*0.25f + strength * 0.75f);
+		
+		for (int k = 0; k < nLen; ++k)
+		{
+			BreakTileAtPos(vExplosion + dir * k);
+		}
+
+	}
 }
 
 

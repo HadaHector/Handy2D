@@ -9,6 +9,13 @@ struct Color
 	Color() {};
 	Color(unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a) :
 		r(_r), g(_g), b(_b), a(_a) {}
+	Color(unsigned int code)
+	{
+		r = ((unsigned char*)(&code))[3];
+		g = ((unsigned char*)(&code))[2];
+		b = ((unsigned char*)(&code))[1];
+		a = ((unsigned char*)(&code))[0];
+	}
 
 	unsigned int forSurface(SDL_Surface* pSurface);
 

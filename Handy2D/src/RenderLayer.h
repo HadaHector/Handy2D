@@ -11,6 +11,7 @@ protected:
 	bool m_bVisible = true;
 	IntRect m_Rect;
 	std::vector<std::string> m_aTags;
+	std::string m_sName;
 public:
 	CRenderLayer(const IntRect& rect) { m_Rect = rect; }
 	virtual ~CRenderLayer() {};
@@ -21,7 +22,9 @@ public:
 	IntRect GetRect() const { return m_Rect; }
 	void SetRect(const IntRect& rect) { m_Rect = rect; }
 	void AddTag(const std::string& sTag) { m_aTags.push_back(sTag);}
-	bool HasTag(const std::string& sTag) const { for (auto&& tag : m_aTags) { if (tag == sTag) return true; } return false; }
+	bool HasTag(const std::string& sTag) const;
+	void SetName(const std::string& name) { m_sName = name; }
+	const std::string& GetName() const { return m_sName; }
 };
 
 class CSpriteRenderLayer : public CRenderLayer

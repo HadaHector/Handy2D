@@ -32,7 +32,6 @@ public:
 	void AddSocket(const std::string& sName, Vec vPos);
 	Vec GetSocketPos(const std::string& sName);
 	Vec GetSocketAbsPos(const std::string& sName);
-	void AddToLayer(CSpriteRenderLayer* pLayer);
 	void DetachParent();
 	CGameObject* GetParent() { return m_pParent;}
 	Vec GetAbsolutePos();

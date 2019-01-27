@@ -73,6 +73,7 @@ void CCollisionManager::Collide()
 		m_aDynamicCurrent[i].From.SetPos(m_aDynamicColliders[i].rect.GetUpperLeft() + m_aDynamicColliders[i].pGameObject.lock()->GetAbsolutePos());
 		m_aDynamicCurrent[i].From.SetSize(m_aDynamicColliders[i].rect.GetSize());
 		m_aDynamicCurrent[i].To = m_aDynamicCurrent[i].From;
+		m_aDynamicCurrent[i].vMove.Reset();
 		for (auto Move : m_aMoves)
 		{
 			if (m_aDynamicColliders[i].pGameObject.lock().get() == Move.pObject)

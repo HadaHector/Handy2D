@@ -28,7 +28,11 @@ void CGameObject::UpdateInternal(const Vec& vPos)
 		Move.pObject = this;
 		Move.vMove = m_vMove;
 		m_vMove -= Move.vMove;
-		CCollisionManager::AddInstruct(Move);
+
+		if (Move.vMove)
+		{
+			CCollisionManager::AddInstruct(Move);
+		}
 	}
 
 	Vec origo = m_vPosition + vPos;
@@ -67,7 +71,7 @@ void CGameObject::AttachSprite(std::shared_ptr<CSprite> pSprite, Vec vPos, const
 				CSpriteRenderLayer* pSpritelayer = dynamic_cast<CSpriteRenderLayer*>(layer);
 				if (pSpritelayer)
 				{
-					AddToLayer(pSpritelayer);
+					pSpritelayer->AddSprite(pSprite);
 				}
 			}
 		}
@@ -102,19 +106,6 @@ Vec CGameObject::GetSocketAbsPos(const std::string & sName)
 		return m_vPosition;
 
 	return it->second + GetAbsolutePos();
-}
-
-void CGameObject::AddToLayer(CSpriteRenderLayer * pLayer)
-{
-	for (unsigned int i = 0; i < m_aChildrenSprites.size(); ++i)
-	{
-		pLayer->AddSprite(m_aChildrenSprites[i].first);
-	}
-
-	for (unsigned int i = 0; i < m_aChildren.size(); ++i)
-	{
-		m_aChildren[i].first->AddToLayer(pLayer);
-	}
 }
 
 void CGameObject::DetachParent()

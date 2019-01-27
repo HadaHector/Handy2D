@@ -55,6 +55,7 @@ public:
 	void ClearClickEventListeners() { m_aClickEventHandlers.clear(); }
 	void OnClick(SClickEvent& Event);
 	std::map<std::string, std::string>& Properties() { return m_mProperties; }
+	void SetVisible(bool bVis) { m_bVisible = bVis; }
 protected:
 
 	std::vector<CGuiElement*> m_aChildren;
@@ -131,7 +132,7 @@ public:
 	void SetDynamic(bool d) { m_pSprite->SetDynamic(d); }
 	bool IsDynamic() const { return m_pSprite->IsDynamic(); }
 	void SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign);
-
+	virtual void SetSize(const IntVec& size);
 private:
 
 	Color m_Color;
