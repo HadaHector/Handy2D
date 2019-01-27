@@ -90,6 +90,8 @@ void STextBlock::SetColor(Color color)
 
 void CTextboxSprite::Render(const CRenderLayer& Layer, Vec vOffset)
 {
+	if (!m_Size) return;
+
 	if (!m_bGenerated)
 	{
 		//first we collect the rects to render, then deal with line height, line break, align etc

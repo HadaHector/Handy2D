@@ -1,24 +1,26 @@
 #pragma once
-#include <SDL.h>
 #include <functional>
 
+struct SDL_Surface;
 
-class PaintedImage
+class CPaintedImage
 {
 private:
 	int m_nWidth = 0, m_nHeight = 0;
 	SDL_Surface* m_pSurface = nullptr;
 
 public:
-	PaintedImage(int nWidth, int nHeight);
+	CPaintedImage(int nWidth, int nHeight);
 
-	~PaintedImage();
+	~CPaintedImage();
 
 	void Set(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 
-	void Set(int x, int y, Uint32 rgba);
+	void Set(int x, int y, unsigned int rgba);
 
 	void Fill(std::function<int(int, int)> fn);
+
+	void CreateTexture(const std::string& sName);
 
 	SDL_Surface* GetData() { return m_pSurface; }
 

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "CollisionManager.h"
 #include <random>
+#include "PaintedImage.h"
 
 const double PI = 3.141592653589793238463;
 
@@ -23,6 +24,25 @@ namespace {
 
 CRatGame* CRatGame::m_pInstance;
 
+
+void CImpact::Init()
+{
+	std::shared_ptr<CAnimSprite> pEff = std::make_shared<CAnimSprite>();
+	pEff->SetTexture(CTexture::LoadTexture("resources/impact.png"));
+	pEff->SetSize(IntVec(64, 64));
+	pEff->SetRowsAndCols(2, 2);
+	pEff->SetFrameTime(0.1);
+	AttachSprite(pEff, Vec(-16, -16), { "camera" });
+}
+
+void CImpact::Update()
+{
+	m_fLifetime += (float) Time::frame;
+	if (m_fLifetime > 0.2f)
+	{
+		DestroySelf();
+	}
+}
 
 void CBase::SetPlayer(int nPlayer)
 {
@@ -116,11 +136,15 @@ bool CProjectile::CollideTerrain(const Vec& pos)
 	ETile tile = CRatGame::GetInstance()->GetTileAtPos(pos);
 	if (tile == ET_Rock)
 	{
+		auto pImpact = std::make_shared<CImpact>();
+		GetParent()->AttachGameObject(pImpact, GetAbsolutePos());
 		DestroySelf();
 		return true;
 	}
 	if (tile >= ET_Dirt1 && tile <= ET_Dirt4)
 	{
+		auto pImpact = std::make_shared<CImpact>();
+		GetParent()->AttachGameObject(pImpact, GetAbsolutePos());
 		Explode(pos);
 		DestroySelf();
 
@@ -466,133 +490,12 @@ bool CRatGame::Load()
 	Vec Size = SDLManager::Instance.GetSize();
 
 
-	for (int y = 0; y < MAP_SIZE_Y; ++y)
-	{
-		for (int x = 0; x < MAP_SIZE_X; ++x)
-		{
-			mapdata[y][x] = (ETile)(random_4(e1) + ET_Dirt1);
-		}
-	}
-
-	
-
-	//top
-	{
-		float offset = random_float(e1) / 6.28f;
-		for (int x = 0; x < MAP_SIZE_X; ++x)
-		{
-			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + x * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + x * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
-			for (int y = 0; y < size; ++y)
-			{
-				mapdata[y][x] = ET_Rock;
-			}
-		}
-	}
-
-	//bottom
-	{
-		float offset = random_float(e1) / 6.28f;
-		for (int x = 0; x < MAP_SIZE_X; ++x)
-		{
-			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + x * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + x * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
-			for (int y = 0; y < size; ++y)
-			{
-				mapdata[MAP_SIZE_Y-1-y][x] = ET_Rock;
-			}
-		}
-	}
-
-	//left
-	{
-		float offset = random_float(e1) / 6.28f;
-		for (int y = 0; y < MAP_SIZE_Y; ++y)
-		{
-			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + y * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + y * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
-			for (int x = 0; x < size; ++x)
-			{
-				mapdata[y][x] = ET_Rock;
-			}
-		}
-	}
-
-	//right
-	{
-		float offset = random_float(e1) / 6.28f;
-		for (int y = 0; y < MAP_SIZE_Y; ++y)
-		{
-			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + y * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + y * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
-			for (int x = 0; x < size; ++x)
-			{
-				mapdata[y][MAP_SIZE_X-1-x] = ET_Rock;
-			}
-		}
-	}
-
-	auto base1 = std::make_shared<CBase>();
-	auto base2 = std::make_shared<CBase>();
-	auto recharge1 = std::make_shared<CRechargeArea>();
-	auto recharge2 = std::make_shared<CRechargeArea>();
-
-	//bases
-	IntVec pos = { CIKK_CAKK_AMP * 2, CIKK_CAKK_AMP * 2 };
-	IntVec size = { MAP_SIZE_X - CIKK_CAKK_AMP * 4 - BASE_SIZE_X, MAP_SIZE_Y - CIKK_CAKK_AMP * 4 - BASE_SIZE_Y };
-	{
-		IntVec size2 = { size.x / 2 - CIKK_CAKK_AMP * 2, size.y };
-		IntVec basepos = IntVec(pos.x + size2.x * (float)(random_float(e1)), pos.y + size2.y * (float)(random_float(e1) ) );
-		m_vSpawnPos1 = basepos + IntVec(BASE_SIZE_X / 2, BASE_SIZE_Y / 2);
-		for (int x = 0; x < BASE_SIZE_X; ++x)
-		{
-			for (int y = 0; y < BASE_SIZE_Y; ++y)
-			{
-				SetTile(basepos + IntVec(x, y), ET_Empty);
-			}
-		}
-		root->AttachGameObject(base1, (basepos - IntVec(1, 6)) * TILE_SIZE);
-		root->AttachGameObject(recharge1, (basepos - IntVec(1,6)) * TILE_SIZE);
-	}
-	{
-		IntVec size2 = { size.x / 2 - CIKK_CAKK_AMP * 2, size.y };
-		IntVec pos2 = {pos.x + size.x / 2 + CIKK_CAKK_AMP * 2 ,pos.y};
-		IntVec basepos = IntVec(pos2.x + size2.x * (float)(random_float(e1) ), pos2.y + size2.y * (float)(random_float(e1) ));
-		m_vSpawnPos2 = basepos + IntVec(BASE_SIZE_X / 2, BASE_SIZE_Y / 2);
-		for (int x = 0; x < BASE_SIZE_X; ++x)
-		{
-			for (int y = 0; y < BASE_SIZE_Y; ++y)
-			{
-				SetTile(basepos + IntVec(x, y), ET_Empty);
-			}
-		}
-		root->AttachGameObject(base2, (basepos - IntVec(1, 6)) * TILE_SIZE);
-		root->AttachGameObject(recharge2, (basepos - IntVec(1, 6)) * TILE_SIZE);
-	}
-
-	
-
-	if (random_bool(e1) == 0)
-	{
-		IntVec temp = m_vSpawnPos1;
-		m_vSpawnPos1 = m_vSpawnPos2;
-		m_vSpawnPos2 = temp;
-		base1->SetPlayer(1);
-		base2->SetPlayer(0);
-		recharge1->m_nPlayer = 1;
-		recharge2->m_nPlayer = 0;
-	}
-	else
-	{
-		base1->SetPlayer(0);
-		base2->SetPlayer(1);
-		recharge1->m_nPlayer = 0;
-		recharge2->m_nPlayer = 1;
-	}
-
-	SpawnRats();
-
-
 
 	pGui = new CGuiLayer(IntRect(0, 0, 1024, 512));
 	SDLManager::Instance.AddLayer(pGui);
 
+
+	pMapImage = new CPaintedImage(MAP_SIZE_X, MAP_SIZE_Y);
 
 	CTexture::LoadTexture("resources/barbg.png");
 	CTexture::LoadTexture("resources/hpbar.png");
@@ -607,6 +510,7 @@ bool CRatGame::Load()
 		pBg[i]->SetImage("resources/black.png");
 		pGui->GetRootElement()->AddChild(pBg[i]);
 	}
+
 
 	pLeftBar1Bg = new CGuiImage();
 	pLeftBar1Bg->SetImage("resources/barbg.png");
@@ -648,13 +552,17 @@ bool CRatGame::Load()
 	pGui->GetRootElement()->AddChild(pLeftHealthIcon);
 	pGui->GetRootElement()->AddChild(pRightHealthIcon);
 
-	pScore = new CGuiText();
-	pScore->SetFont("consolab.ttf",48);
+	pScore = new CGuiTextbox();
 	pScore->SetAlign(EHA_Center, EVA_Center);
-	pScore->SetColor(Color(255,255,255,0));
-	pScore->SetText("0:0");
 	pGui->GetRootElement()->AddChild(pScore);
 
+	pFPS = new CGuiText();
+	pFPS->SetFont("consolab.ttf", 24);
+	pFPS->SetAlign(EHA_Left, EVA_Center);
+	pFPS->SetColor(Color(255, 255, 255, 0));
+	pFPS->SetSize(IntVec(100, 50));
+	pFPS->SetPosition(IntVec(0, 0));
+	pGui->GetRootElement()->AddChild(pFPS);
 
 	pMenu = new CGuiElement();
 	pGui->GetRootElement()->AddChild(pMenu);
@@ -717,7 +625,6 @@ bool CRatGame::Load()
 		pMenu->AddChild(pPlayerText2);
 	}
 
-
 	pStartButton = new CGuiImage();
 	pStartButton->SetImage("resources/button.png");
 	pStartButton->SetSize(IntVec(256, 128));
@@ -725,6 +632,7 @@ bool CRatGame::Load()
 
 	pStartButton->AddClickEventListener([=](SClickEvent& Event) {
 		pMenu->SetVisible(false);
+		ResetGame();
 	});
 
 	pStart = new CGuiText();
@@ -735,7 +643,180 @@ bool CRatGame::Load()
 	pStart->SetColor(Color(255, 255, 255, 0));
 	pStartButton->AddChild(pStart);
 
+
+	pGameOverBg = new CGuiImage();
+	pGameOverBg->SetImage("resources/black.png");
+	pGameOverBg->SetVisible(false);
+	pGui->GetRootElement()->AddChild(pGameOverBg);
+
+	pOverviewMapImage = new CGuiImage();
+	pGameOverBg->AddChild(pOverviewMapImage);
+
+	pGameOverText = new CGuiTextbox();
+	pGameOverText->SetAlign(EHA_Center, EVA_Center);
+	pGameOverBg->AddChild(pGameOverText);
+
+	pGameOverBg->AddClickEventListener([=](SClickEvent& Event) {
+		pGameOverBg->SetVisible(false);
+		pMenu->SetVisible(true);
+	});
+
 	return true;
+}
+
+void CRatGame::ResetGame()
+{
+	nRound = 0;
+	scores[0] = 0;
+	scores[1] = 0;
+	UpdateScore();
+
+
+	for (int y = 0; y < MAP_SIZE_Y; ++y)
+	{
+		for (int x = 0; x < MAP_SIZE_X; ++x)
+		{
+			mapdata[y][x] = (ETile)(random_4(e1) + ET_Dirt1);
+		}
+	}
+
+
+
+	//top
+	{
+		float offset = random_float(e1) / 6.28f;
+		for (int x = 0; x < MAP_SIZE_X; ++x)
+		{
+			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + x * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + x * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
+			for (int y = 0; y < size; ++y)
+			{
+				mapdata[y][x] = ET_Rock;
+			}
+		}
+	}
+
+	//bottom
+	{
+		float offset = random_float(e1) / 6.28f;
+		for (int x = 0; x < MAP_SIZE_X; ++x)
+		{
+			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + x * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + x * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
+			for (int y = 0; y < size; ++y)
+			{
+				mapdata[MAP_SIZE_Y - 1 - y][x] = ET_Rock;
+			}
+		}
+	}
+
+	//left
+	{
+		float offset = random_float(e1) / 6.28f;
+		for (int y = 0; y < MAP_SIZE_Y; ++y)
+		{
+			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + y * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + y * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
+			for (int x = 0; x < size; ++x)
+			{
+				mapdata[y][x] = ET_Rock;
+			}
+		}
+	}
+
+	//right
+	{
+		float offset = random_float(e1) / 6.28f;
+		for (int y = 0; y < MAP_SIZE_Y; ++y)
+		{
+			int size = (int)(CIKK_CAKK_AMP + CIKK_CAKK2_AMP + sinf(offset + y * CIKK_CAKK_FREQ) * CIKK_CAKK_AMP + sinf(offset + y * CIKK_CAKK2_FREQ) * CIKK_CAKK2_AMP);
+			for (int x = 0; x < size; ++x)
+			{
+				mapdata[y][MAP_SIZE_X - 1 - x] = ET_Rock;
+			}
+		}
+	}
+
+	if (!m_base1.expired())
+	{
+		m_base1.lock()->DestroySelf();
+	}
+	if (!m_base2.expired())
+	{
+		m_base2.lock()->DestroySelf();
+	}
+	if (!m_recharge1.expired())
+	{
+		m_recharge1.lock()->DestroySelf();
+	}
+	if (!m_recharge2.expired())
+	{
+		m_recharge2.lock()->DestroySelf();
+	}
+
+
+	auto base1 = std::make_shared<CBase>();
+	auto base2 = std::make_shared<CBase>();
+	auto recharge1 = std::make_shared<CRechargeArea>();
+	auto recharge2 = std::make_shared<CRechargeArea>();
+
+	m_base1 = base1;
+	m_base2 = base2;
+	m_recharge1 = recharge1;
+	m_recharge2 = recharge2;
+
+	//bases
+	IntVec pos = { CIKK_CAKK_AMP * 2, CIKK_CAKK_AMP * 2 };
+	IntVec size = { MAP_SIZE_X - CIKK_CAKK_AMP * 4 - BASE_SIZE_X, MAP_SIZE_Y - CIKK_CAKK_AMP * 4 - BASE_SIZE_Y };
+	{
+		IntVec size2 = { size.x / 2 - CIKK_CAKK_AMP * 2, size.y };
+		IntVec basepos = IntVec(pos.x + size2.x * (float)(random_float(e1)), pos.y + size2.y * (float)(random_float(e1)));
+		m_vSpawnPos1 = basepos + IntVec(BASE_SIZE_X / 2, BASE_SIZE_Y / 2);
+		for (int x = 0; x < BASE_SIZE_X; ++x)
+		{
+			for (int y = 0; y < BASE_SIZE_Y; ++y)
+			{
+				SetTile(basepos + IntVec(x, y), ET_Empty);
+			}
+		}
+		root->AttachGameObject(base1, (basepos - IntVec(1, 6)) * TILE_SIZE);
+		root->AttachGameObject(recharge1, (basepos - IntVec(1, 6)) * TILE_SIZE);
+	}
+	{
+		IntVec size2 = { size.x / 2 - CIKK_CAKK_AMP * 2, size.y };
+		IntVec pos2 = { pos.x + size.x / 2 + CIKK_CAKK_AMP * 2 ,pos.y };
+		IntVec basepos = IntVec(pos2.x + size2.x * (float)(random_float(e1)), pos2.y + size2.y * (float)(random_float(e1)));
+		m_vSpawnPos2 = basepos + IntVec(BASE_SIZE_X / 2, BASE_SIZE_Y / 2);
+		for (int x = 0; x < BASE_SIZE_X; ++x)
+		{
+			for (int y = 0; y < BASE_SIZE_Y; ++y)
+			{
+				SetTile(basepos + IntVec(x, y), ET_Empty);
+			}
+		}
+		root->AttachGameObject(base2, (basepos - IntVec(1, 6)) * TILE_SIZE);
+		root->AttachGameObject(recharge2, (basepos - IntVec(1, 6)) * TILE_SIZE);
+	}
+
+
+
+	if (random_bool(e1) == 0)
+	{
+		IntVec temp = m_vSpawnPos1;
+		m_vSpawnPos1 = m_vSpawnPos2;
+		m_vSpawnPos2 = temp;
+		base1->SetPlayer(1);
+		base2->SetPlayer(0);
+		recharge1->m_nPlayer = 1;
+		recharge2->m_nPlayer = 0;
+	}
+	else
+	{
+		base1->SetPlayer(0);
+		base2->SetPlayer(1);
+		recharge1->m_nPlayer = 0;
+		recharge2->m_nPlayer = 1;
+	}
+
+
+	SpawnRats();
 }
 
 
@@ -771,6 +852,14 @@ void CRatGame::Resize()
 	pBg[3]->SetPosition(Vec(vWinSize.x*0.99f, 0));
 	pBg[4]->SetSize(Vec(vWinSize.x, vWinSize.y*0.17f));
 	pBg[4]->SetPosition(Vec(0, vWinSize.y*0.83f));
+
+	pGameOverBg->SetSize(vWinSize);
+	pGameOverText->SetSize(vWinSize * Vec(1.0f, 0.2f));
+
+	float scale = vWinSize.y * 0.5f / MAP_SIZE_Y;
+
+	pOverviewMapImage->SetSize(IntVec(MAP_SIZE_X * scale,MAP_SIZE_Y * scale));
+	pOverviewMapImage->SetPosition(IntVec((vWinSize.x - MAP_SIZE_X * scale)/2, vWinSize.y*0.25));
 
 	m_bResized = false;
 }
@@ -812,16 +901,17 @@ void CRatGame::Update()
 		if (roundrestarttimer <= 0)
 		{
 			roundrestarttimer = -1;
-			if (!m_rat1.expired())
-			{
-				m_rat1.lock()->DestroySelf();
-			}
-			if (!m_rat2.expired())
-			{
-				m_rat2.lock()->DestroySelf();
-			}
 
-			SpawnRats();
+			if (scores[0] == 3 || scores[1] == 3)
+			{
+				GameOver();
+			}
+			else
+			{
+				SpawnRats();
+				UpdateScore();
+			}
+			
 		}
 
 	}
@@ -843,10 +933,87 @@ void CRatGame::Update()
 		}
 		explosionTimer = newtime;
 	}
+
+	pFPS->SetText(std::to_string(Time::fps));
+
+	if (Input::GetKey(KEY_R).pressed)
+	{
+		GameOver();
+	}
+
+	if (Input::GetKey(KEY_K).pressed)
+	{
+		m_rat1.lock()->Die();
+	}
+
+	if (Input::GetKey(KEY_RETURN).pressed)
+	{
+		if (pMenu->IsVisible())
+		{
+			pMenu->SetVisible(false);
+			ResetGame();
+		}
+		if (pGameOverBg->IsVisible())
+		{
+			pGameOverBg->SetVisible(false);
+			pMenu->SetVisible(true);
+		}
+	}
+}
+
+void CRatGame::GameOver()
+{
+
+	pMapImage->Fill([=](int y, int x) -> int {
+
+		ETile tile = mapdata[x][y];
+		switch (tile)
+		{
+		case ET_Empty: return 0x463428ff;
+		case ET_Dirt1:
+		case ET_Dirt2:
+		case ET_Dirt3:
+		case ET_Dirt4: return 0xeba456ff;
+		case ET_Rock: return 0x7d7d7dff;
+		default:
+			return 0x00000000;
+		}
+
+	});
+
+	CTexture::DelTexture("mapimage");
+	pMapImage->CreateTexture("mapimage");
+	pOverviewMapImage->SetImage("mapimage");
+	pGameOverBg->SetVisible(true);
+
+	STextBlock text;
+	text.SetFont("consolab.ttf");
+	text.SetFontSize(36);
+	text.SetColor(scores[0] > scores[1] ? Color(100, 255, 100, 0) : Color(0x3ab1ff00));
+	text.SetText((scores[0] > scores[1]) ? "Player 1" : "Player 2");
+
+	STextBlock text2;
+	text2.SetFont("consolab.ttf");
+	text2.SetFontSize(36);
+	text2.SetColor(Color(255, 255, 255, 255));
+	text2.SetText(" wins!");
+
+	pGameOverText->Clear();
+	pGameOverText->AddBlock(text);
+	pGameOverText->AddBlock(text2);
 }
 
 void CRatGame::SpawnRats()
 {
+	if (!m_rat1.expired())
+	{
+		m_rat1.lock()->DestroySelf();
+	}
+	if (!m_rat2.expired())
+	{
+		m_rat2.lock()->DestroySelf();
+	}
+
 	std::shared_ptr<CRat> rat1;
 	std::shared_ptr<CRat> rat2;
 	rat1 = std::make_shared<CRat>();
@@ -930,6 +1097,12 @@ void CRatGame::UpdateGui()
 
 	pScore->SetSize(IntVec((int)vWinSize.x*0.2f,(int)(vWinSize.y*0.09)));
 	pScore->SetPosition(IntVec((int)vWinSize.x*0.4f, (vWinSize.y*0.88)));
+
+	bool bShow = (Time::full*2 - int(Time::full*2)) < 0.5;
+
+	pLeftEnergyBar->SetVisible(fEnergy1 < 0.15 ? bShow : true);
+	pRightEnergyBar->SetVisible(fEnergy2 < 0.15 ? bShow : true);
+
 }
 
 void CRatGame::OnResize()
@@ -942,12 +1115,27 @@ void CRatGame::AddScore(int nPlayer)
 	scores[nPlayer]++;
 	UpdateScore();
 	roundrestarttimer = 5;
+	nRound++;
 }
 
 
 void CRatGame::UpdateScore()
 {
-	pScore->SetText(std::to_string(scores[0]) + ":" + std::to_string(scores[1]));
+	pScore->Clear();
+
+	STextBlock round;
+	round.SetFont("consolab.ttf");
+	round.SetFontSize(36);
+	round.SetColor(Color(255, 255, 255, 0));
+	round.SetText("Round " + std::to_string(nRound+1) + "\n");
+	pScore->AddBlock(round);
+
+	STextBlock scoretext;
+	scoretext.SetFont("consolab.ttf");
+	scoretext.SetFontSize(48);
+	scoretext.SetColor(Color(255, 255, 255, 0));
+	scoretext.SetText(std::to_string(scores[0]) + ":" + std::to_string(scores[1]));
+	pScore->AddBlock(scoretext);
 }
 
 void CRatGame::StartExplosion(IntVec pos)

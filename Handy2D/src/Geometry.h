@@ -115,6 +115,11 @@ public:
 	IntVec() : x(0), y(0) {};
 	IntVec(int _x, int _y) : x(_x), y(_y) {};
 
+	bool operator==(const IntVec& other) const
+	{
+		return x == other.x && y == other.y;
+	}
+
 	void operator+=(const IntVec& other)
 	{
 		x += other.x;
@@ -153,6 +158,17 @@ public:
 	{
 		return IntVec(-x, -y);
 	}
+
+	IntVec operator*(const Vec& other) const
+	{
+		return IntVec((int)(x * other.x), (int)(y * other.y));
+	}
+
+	IntVec operator*(const IntVec& other) const
+	{
+		return IntVec(x * other.x, y * other.y);
+	}
+
 	explicit operator SDL_Point() const;
 
 	operator Vec() const

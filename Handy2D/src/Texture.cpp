@@ -63,7 +63,7 @@ void CTexture::UnloadTextures()
 	m_mStore.clear();
 }
 
-std::weak_ptr<CTexture> CTexture::GetTexture(std::string sName)
+std::weak_ptr<CTexture> CTexture::GetTexture(const std::string& sName)
 {
 	auto it = m_mStore.find(sName);
 	if (it == m_mStore.end())
@@ -73,12 +73,58 @@ std::weak_ptr<CTexture> CTexture::GetTexture(std::string sName)
 	return it->second;
 }
 
-std::weak_ptr<CTexture> CTexture::LoadTexture(std::string sFilePath, std::string sName)
+std::weak_ptr<CTexture> CTexture::LoadTexture(const std::string& sFilePath, const std::string& sName)
 {
+	const std::string& sKey = sName.size() == 0 ? sFilePath : sName;
+
+	auto it = m_mStore.find(sKey);
+	if (it != m_mStore.end())
+	{
+		return it->second;
+	}
+
 	auto pTex = std::make_shared<CTexture>();
 	pTex->m_sFilePath = sFilePath;
-	pTex->m_sName = sName.size() == 0 ? sFilePath : sName;
-	m_mStore.insert(std::make_pair(pTex->m_sName, pTex)).first->second;
+	pTex->m_sName = sKey;
+	m_mStore.insert(std::make_pair(pTex->m_sName, pTex));
 	pTex->Load();
 	return pTex;
+}
+
+
+std::weak_ptr<CTexture> CTexture::AddSurface(SDL_Surface* pSurface, const std::string& sName)
+{
+	auto pTex = std::make_shared<CTexture>();
+	pTex->m_sName = sName;
+	m_mStore.insert(std::make_pair(sName, pTex));
+
+
+	pTex->m_pTexture = SDL_CreateTextureFromSurface(SDLManager::Instance.GetRenderer(), pSurface);
+	if (pTex->m_pTexture == nullptr)
+	{
+		printf("Unable to create texture from surface! SDL Error: %s\n", SDL_GetError());
+		pTex->m_bError = true;
+		pTex->m_sError = SDL_GetError();
+	}
+	else
+	{
+		
+		pTex->m_Size.x = pSurface->w;
+		pTex->m_Size.y = pSurface->h;
+		pTex->m_bLoaded = true;
+	}
+
+	return pTex;
+}
+
+
+bool CTexture::DelTexture(const std::string& sName)
+{
+	auto it = m_mStore.find(sName);
+	if (it == m_mStore.end())
+	{
+		return false;
+	}
+	m_mStore.erase(it);
+	return true;
 }

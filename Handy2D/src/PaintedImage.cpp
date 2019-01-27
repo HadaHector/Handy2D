@@ -1,6 +1,8 @@
+#include <SDL.h>
 #include "PaintedImage.h"
+#include "Texture.h"
 
-PaintedImage::PaintedImage(int nWidth, int nHeight)
+CPaintedImage::CPaintedImage(int nWidth, int nHeight)
 {
 	m_nWidth = nWidth;
 	m_nHeight = nHeight;
@@ -8,7 +10,7 @@ PaintedImage::PaintedImage(int nWidth, int nHeight)
 	m_pSurface = SDL_CreateRGBSurface(0, m_nWidth, m_nHeight, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 }
 
-PaintedImage::~PaintedImage()
+CPaintedImage::~CPaintedImage()
 {
 	if (m_pSurface)
 	{
@@ -16,7 +18,7 @@ PaintedImage::~PaintedImage()
 	}
 }
 
-void PaintedImage::Set(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+void CPaintedImage::Set(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
 	if (m_pSurface && x >= 0 && y >= 0 && x < m_pSurface->w && y < m_pSurface->h)
 	{
@@ -28,19 +30,19 @@ void PaintedImage::Set(int x, int y, unsigned char r, unsigned char g, unsigned 
 	}
 }
 
-void PaintedImage::Set(int x, int y, Uint32 rgba)
+void CPaintedImage::Set(int x, int y, unsigned int rgba)
 {
 	if (m_pSurface && x >= 0 && y >= 0 && x < m_pSurface->w && y < m_pSurface->h)
 	{
 		int idx = (m_pSurface->w * y + x) * 4;
-		((unsigned char*)m_pSurface->pixels)[idx + 0] = rgba;
-		((unsigned char*)m_pSurface->pixels)[idx + 1] = rgba << 8;
-		((unsigned char*)m_pSurface->pixels)[idx + 2] = rgba << 16;
-		((unsigned char*)m_pSurface->pixels)[idx + 3] = rgba << 24;
+		((unsigned char*)m_pSurface->pixels)[idx + 0] = ((unsigned char*)(&rgba))[3];
+		((unsigned char*)m_pSurface->pixels)[idx + 1] = ((unsigned char*)(&rgba))[2];
+		((unsigned char*)m_pSurface->pixels)[idx + 2] = ((unsigned char*)(&rgba))[1];
+		((unsigned char*)m_pSurface->pixels)[idx + 3] = ((unsigned char*)(&rgba))[0];
 	}
 }
 
-void PaintedImage::Fill(std::function<int(int, int)> fn)
+void CPaintedImage::Fill(std::function<int(int, int)> fn)
 {
 	if (!m_pSurface || !fn)
 	{
@@ -53,9 +55,14 @@ void PaintedImage::Fill(std::function<int(int, int)> fn)
 		{
 			idx = (m_pSurface->w * y + x) * 4;
 			rgba = fn(x, y);
-			((unsigned char*)m_pSurface->pixels)[idx + 0] = (unsigned char)(rgba >> 24);
-			((unsigned char*)m_pSurface->pixels)[idx + 1] = (unsigned char)(rgba >> 16);
-			((unsigned char*)m_pSurface->pixels)[idx + 2] = (unsigned char)(rgba >> 8);
-			((unsigned char*)m_pSurface->pixels)[idx + 3] = (unsigned char)rgba;
+			((unsigned char*)m_pSurface->pixels)[idx + 0] = ((unsigned char*)(&rgba))[0];
+			((unsigned char*)m_pSurface->pixels)[idx + 1] = ((unsigned char*)(&rgba))[1];
+			((unsigned char*)m_pSurface->pixels)[idx + 2] = ((unsigned char*)(&rgba))[2];
+			((unsigned char*)m_pSurface->pixels)[idx + 3] = ((unsigned char*)(&rgba))[3];
 		}
+}
+
+void CPaintedImage::CreateTexture(const std::string& sName)
+{
+	CTexture::AddSurface(m_pSurface, sName);
 }

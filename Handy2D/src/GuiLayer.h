@@ -56,6 +56,7 @@ public:
 	void OnClick(SClickEvent& Event);
 	std::map<std::string, std::string>& Properties() { return m_mProperties; }
 	void SetVisible(bool bVis) { m_bVisible = bVis; }
+	bool IsVisible() const { return m_bVisible; }
 protected:
 
 	std::vector<CGuiElement*> m_aChildren;

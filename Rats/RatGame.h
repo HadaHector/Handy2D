@@ -30,6 +30,14 @@ enum ETile
 	ET_Rock
 };
 
+class CImpact : public CGameObject
+{
+	float m_fLifetime = 0.0f;
+public:
+	virtual void Init();
+	virtual void Update();
+};
+
 
 class CBase : public CGameObject
 {
@@ -115,8 +123,9 @@ class CRatGame : public CGameLogic
 {
 	std::vector<CGuiImage*> aImages;
 	std::shared_ptr<CGameObject> root;
-	std::weak_ptr<CRat> m_rat1;
-	std::weak_ptr<CRat> m_rat2;
+	std::weak_ptr<CRat> m_rat1, m_rat2;
+	std::weak_ptr<CBase> m_base1, m_base2;
+	std::weak_ptr<CRechargeArea> m_recharge1, m_recharge2;
 	std::vector<std::shared_ptr<CImageSprite>> m_aBgs;
 	CCameraRenderLayer *pCamera1, *pCamera2;
 	CCameraRenderLayer *pBgCamera1, *pBgCamera2;
@@ -126,11 +135,13 @@ class CRatGame : public CGameLogic
 	CGuiImage *pLeftBar1Bg, *pLeftBar2Bg, *pRightBar1Bg, *pRightBar2Bg;
 	CGuiImage *pLeftHpBar, *pLeftEnergyBar, *pRightHpBar, *pRightEnergyBar;
 	CGuiImage *pLeftEnergyIcon, *pLeftHealthIcon, *pRightEnergyIcon, *pRightHealthIcon;
-	CGuiImage *pMenuBg, *pTitleImg, *pStartButton;
-	CGuiTextbox *pPlayerText1, *pPlayerText2, *pStartText;
+	CGuiImage *pMenuBg, *pTitleImg, *pStartButton, *pOverviewMapImage, *pGameOverBg;
+	CGuiTextbox *pPlayerText1, *pPlayerText2, *pStartText, *pScore, *pGameOverText;
 
-	CGuiText *pScore, *pStart;
+	CGuiText *pStart, *pFPS;
 	CGuiImage* pBg[5];
+
+	class CPaintedImage *pMapImage;
 
 	ETile mapdata[MAP_SIZE_Y][MAP_SIZE_X];
 
@@ -141,6 +152,7 @@ class CRatGame : public CGameLogic
 	IntVec m_vSpawnPos1, m_vSpawnPos2;
 
 	int scores[2] = { 0,0 };
+	int nRound = 0;
 
 	double roundrestarttimer = -1;
 	IntVec vExplosion;
@@ -167,5 +179,7 @@ public:
 	void SpawnRats();
 	void StartExplosion(IntVec pos);
 	void Explode(float strength, int count);
+	void ResetGame();
+	void GameOver();
 };
 

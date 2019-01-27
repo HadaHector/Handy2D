@@ -174,19 +174,22 @@ void CGuiImage::CalcSize()
 
 void CGuiImage::Render()
 {
-	if (!m_pSprite) return;
-	
-	if (m_eValid == EUnknown)
+	if (!m_bVisible) return;
+
+	if (m_pSprite)
 	{
-		CalcSize();
+
+		if (m_eValid == EUnknown)
+		{
+			CalcSize();
+		}
+
+		if (m_eValid == EInvalid) return;
+
+		m_pSprite->SetPos(m_vPosition);
+		m_pSprite->SetSize(m_vUsedSize);
+		m_pLayer->AddRenderData(m_pSprite, this);
 	}
-
-	if (m_eValid == EInvalid) return;
-
-	m_pSprite->SetPos(m_vPosition);
-
-	m_pSprite->SetSize(m_vUsedSize);
-	m_pLayer->AddRenderData(m_pSprite,this);
 
 	CGuiElement::Render();
 }
@@ -206,7 +209,9 @@ void CGuiText::SetText(const std::string& sText)
 
 void CGuiText::SetSize(const IntVec& size)
 {
+	if (m_vSize == size) return;
 	m_vSize = size;
+	m_eValid = EUnknown;
 }
 
 void CGuiText::CheckValidity()
@@ -230,18 +235,20 @@ void CGuiText::SetFont(const std::string& sFont, int nFontSize)
 
 void CGuiText::Render()
 {
-	if (!m_pSprite) return;
-
-	if (m_eValid == EUnknown)
+	if (m_pSprite)
 	{
-		CheckValidity();
+
+		if (m_eValid == EUnknown)
+		{
+			CheckValidity();
+		}
+
+		if (m_eValid == EInvalid) return;
+
+		m_pSprite->SetPos(m_vPosition);
+		m_pSprite->SetSize(m_vSize);
+		m_pLayer->AddRenderData(m_pSprite, this);
 	}
-
-	if (m_eValid == EInvalid) return;
-
-	m_pSprite->SetPos(m_vPosition);
-	m_pSprite->SetSize(m_vSize);
-	m_pLayer->AddRenderData(m_pSprite, this);
 
 	CGuiElement::Render();
 }
@@ -286,11 +293,13 @@ CGuiTextbox::CGuiTextbox()
 
 void CGuiTextbox::Render()
 {
-	if (!m_pSprite) return;
+	if (m_pSprite)
+	{
 
-	m_pSprite->SetPos(m_vPosition);
-	m_pSprite->SetSize(m_vSize);
-	m_pLayer->AddRenderData(m_pSprite, this);
+		m_pSprite->SetPos(m_vPosition);
+		m_pSprite->SetSize(m_vSize);
+		m_pLayer->AddRenderData(m_pSprite, this);
+	}
 
 	CGuiElement::Render();
 }
@@ -332,6 +341,7 @@ void CGuiTextbox::SetAlign(EHorizontalAlign eHAlign, EVerticalAlign eVAlign)
 
 void CGuiTextbox::SetSize(const IntVec& size)
 { 
+	if (m_vSize == size) return;
 	m_vSize = size; 
 	m_eValid = EUnknown; 
 	m_pSprite->Invalidate();

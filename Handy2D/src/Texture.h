@@ -5,6 +5,7 @@
 #include <memory>
 
 struct SDL_Texture;
+struct SDL_Surface;
 
 class CTexture
 {
@@ -24,9 +25,11 @@ public:
 	CTexture(); //do not use!
 	virtual ~CTexture();
 
-	static std::weak_ptr<CTexture> LoadTexture(std::string sFilePath, std::string sName = "");
+	static std::weak_ptr<CTexture> LoadTexture(const std::string& sFilePath, const std::string& sName = "");
+	static std::weak_ptr<CTexture> AddSurface(SDL_Surface* pSurface, const std::string& sName);
 	static void UnloadTextures();
-	static std::weak_ptr<CTexture> GetTexture(std::string sName);
+	static std::weak_ptr<CTexture> GetTexture(const std::string& sName);
+	static bool DelTexture(const std::string& sName);
 	static std::map<std::string, std::shared_ptr<CTexture>> m_mStore;
 
 	SDL_Texture* GetTexture();
