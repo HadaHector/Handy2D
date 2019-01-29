@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Audio.h" />
     <ClInclude Include="src\CollisionManager.h" />
     <ClInclude Include="src\Color.h" />
     <ClInclude Include="src\Font.h" />
     <ClInclude Include="src\GameLogic.h" />
     <ClInclude Include="src\Keys.h" />
     <ClInclude Include="src\RenderLayer.h" />
+    <ClInclude Include="src\Sound.h" />
     <ClInclude Include="src\Sprite.h" />
     <ClInclude Include="src\TextboxSprite.h" />
     <ClInclude Include="src\Texture.h" />
@@ -37,10 +39,12 @@
     <ClInclude Include="src\Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Audio.cpp" />
     <ClCompile Include="src\CollisionManager.cpp" />
     <ClCompile Include="src\Color.cpp" />
     <ClCompile Include="src\Font.cpp" />
     <ClCompile Include="src\RenderLayer.cpp" />
+    <ClCompile Include="src\Sound.cpp" />
     <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="src\TextboxSprite.cpp" />
     <ClCompile Include="src\Texture.cpp" />
@@ -104,8 +108,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Code\c++\Handy2D\Handy2D\Dependencies\SDL2-2.0.9\include;$(ProjectDir)Dependencies\SDL2-2.0.9\include\;$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\include;$(ProjectDir)Dependencies\SDL2_image-2.0.4\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\lib\x86;$(ProjectDir)Dependencies\SDL2_image-2.0.4\lib\x86;$(ProjectDir)Dependencies\SDL2-2.0.9\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Code\c++\Handy2D\Handy2D\Dependencies\SDL2-2.0.9\include;$(ProjectDir)Dependencies\SDL2-2.0.9\include\;$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\include;$(ProjectDir)Dependencies\SDL2_image-2.0.4\include;$(ProjectDir)Dependencies\SDL2_mixer-2.0.4\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\lib\x86;$(ProjectDir)Dependencies\SDL2_image-2.0.4\lib\x86;$(ProjectDir)Dependencies\SDL2-2.0.9\lib\x86;$(ProjectDir)Dependencies\SDL2_mixer-2.0.4\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)Dependencies\SDL2-2.0.9\include\;$(ProjectDir)Dependencies\SDL2_ttf-2.0.14\include;$(ProjectDir)Dependencies\SDL2_image-2.0.4\include;$(IncludePath)</IncludePath>
@@ -134,7 +138,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_mixer.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

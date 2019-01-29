@@ -11,6 +11,7 @@
 #include "Texture.h"
 #include "Time.h"
 #include "CollisionManager.h"
+#include "SDL_mixer.h"
 
 
 
@@ -167,7 +168,14 @@ bool SDLManager::Init()
 			throw std::runtime_error(error);
 		}
 
+		if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+		{
+			return false;
+		}
+
 		if (!LoadMedia()) throw std::runtime_error("Failed to load media!");
+
+
 	}
 	catch (std::runtime_error e)
 	{
@@ -235,6 +243,7 @@ void SDLManager::Close()
 	//Quit SDL subsystems
 	TTF_Quit();
 	IMG_Quit();
+	Mix_Quit();
 	SDL_Quit();
 }
 

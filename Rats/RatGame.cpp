@@ -11,6 +11,7 @@
 #include "CollisionManager.h"
 #include <random>
 #include "PaintedImage.h"
+#include "Audio.h"
 
 const double PI = 3.141592653589793238463;
 
@@ -33,6 +34,7 @@ void CImpact::Init()
 	pEff->SetRowsAndCols(2, 2);
 	pEff->SetFrameTime(0.1);
 	AttachSprite(pEff, Vec(-16, -16), { "camera" });
+	CAudio::PlaySound(CSound::GetSound("resources/hit.wav"));
 }
 
 void CImpact::Update()
@@ -225,6 +227,8 @@ void CRat::Fire()
 	{
 		Die();
 	}
+
+	CAudio::PlaySound(CSound::GetSound("resources/laser.wav"));
 }
 
 void CRat::Update()
@@ -332,6 +336,7 @@ void CRat::Die()
 		DestroySelf();
 		CRatGame::GetInstance()->AddScore(m_nPlayer ? 0 : 1);
 		CRatGame::GetInstance()->StartExplosion(GetPos());
+		CAudio::PlaySound(CSound::GetSound("resources/explosion.wav"));
 		m_bDead = true;
 	}
 	
@@ -469,6 +474,11 @@ bool CRatGame::Load()
 	SDLManager::Instance.AddLayer(pCamera2);
 
 	CTexture::LoadTexture("resources/bg.png");
+
+	CAudio::AllocateChannels(64);
+	CSound::LoadSound("resources/laser.wav");
+	CSound::LoadSound("resources/explosion.wav");
+	CSound::LoadSound("resources/hit.wav");
 
 	for (int x = -1; x < 3; ++x)
 	{
