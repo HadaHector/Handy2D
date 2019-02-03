@@ -204,11 +204,28 @@ void CRat::Init()
 	CTexture::LoadTexture("resources/rat_upright.png");
 	CTexture::LoadTexture("resources/rat_downleft.png");
 	CTexture::LoadTexture("resources/rat_downright.png");
+
+	CTexture::LoadTexture("resources/rat_left2.png");
+	CTexture::LoadTexture("resources/rat_right2.png");
+	CTexture::LoadTexture("resources/rat_up2.png");
+	CTexture::LoadTexture("resources/rat_down2.png");
+	CTexture::LoadTexture("resources/rat_upleft2.png");
+	CTexture::LoadTexture("resources/rat_upright2.png");
+	CTexture::LoadTexture("resources/rat_downleft2.png");
+	CTexture::LoadTexture("resources/rat_downright2.png");
+
 	m_pRat = std::make_shared<CAnimSprite>();
-	m_pRat->SetTexture(CTexture::GetTexture("resources/rat_left.png"));
-	m_pRat->SetRowsAndCols(2, 2);
-	m_pRat->SetSize(48, 48);
-	AttachSprite(m_pRat, Vec(-24, -24), { "camera" });
+	if (m_nPlayer == 1)
+	{
+		m_pRat->SetTexture(CTexture::GetTexture("resources/rat_left.png"));
+	}
+	else
+	{
+		m_pRat->SetTexture(CTexture::GetTexture("resources/rat_left2.png"));
+	}
+	m_pRat->SetRowsAndCols(2, 1);
+	m_pRat->SetSize(80, 80);
+	AttachSprite(m_pRat, Vec(-40, -40), { "camera" });
 	AddCollider(IntRect(-24, -24, 48, 48), true, OVERLAP | OVERLAP_EVENTS | COLLIDE | COLLIDE_EVENTS);
 	AddSocket("shoot", Vec(0, 0));
 	m_vDir = { -1,0 };
@@ -248,17 +265,17 @@ void CRat::Update()
 			if (bLeft)
 			{
 				m_vDir = { -1,-1 };
-				tex = "resources/rat_upleft.png";
+				tex = "resources/rat_upleft";
 			}
 			else if (bRight)
 			{
 				m_vDir = { 1,-1 };
-				tex = "resources/rat_upright.png";
+				tex = "resources/rat_upright";
 			}
 			else
 			{
 				m_vDir = { 0,-1 };
-				tex = "resources/rat_up.png";
+				tex = "resources/rat_up";
 			}
 		}
 		else if (bDown)
@@ -266,36 +283,44 @@ void CRat::Update()
 			if (bLeft)
 			{
 				m_vDir = { -1,1 };
-				tex = "resources/rat_downleft.png";
+				tex = "resources/rat_downleft";
 			}
 			else if (bRight)
 			{
 				m_vDir = { 1,1 };
-				tex = "resources/rat_downright.png";
+				tex = "resources/rat_downright";
 			}
 			else
 			{
 				m_vDir = { 0,1 };
-				tex = "resources/rat_down.png";
+				tex = "resources/rat_down";
 			}
 		}
 		else if (bLeft)
 		{
 			m_vDir = { -1,0 };
-			tex = "resources/rat_left.png";
+			tex = "resources/rat_left";
 		}
 		else if (bRight)
 		{
 			m_vDir = { 1,0 };
-			tex = "resources/rat_right.png";
+			tex = "resources/rat_right";
 		}
 
 		if (tex.size() > 0)
 		{
 			m_vDir.Normalize();
 			AddMovement(m_vDir * Time::frame * 300.0f);
+			if (m_nPlayer == 1)
+			{
+				tex += ".png";
+			}
+			else
+			{
+				tex += "2.png";
+			}
 			m_pRat->SetTexture(CTexture::GetTexture(tex));
-			m_pRat->SetSize(48, 48);
+			m_pRat->SetSize(80, 80);
 			bMoving = true;
 		}
 	}
@@ -315,7 +340,7 @@ void CRat::Update()
 
 	if (m_timer > 20)
 	{
-		m_nStep = (m_nStep + 1) % 4;
+		m_nStep = (m_nStep + 1) % 2;
 		m_timer = 0;
 		m_pRat->SetFrame(m_nStep);
 	}
@@ -569,10 +594,10 @@ bool CRatGame::Load()
 	pGui->GetRootElement()->AddChild(pScore);
 
 	pFPS = new CGuiText();
-	pFPS->SetFont("consolab.ttf", 16);
+	pFPS->SetFont("consola.ttf", 12);
 	pFPS->SetAlign(EHA_Left, EVA_Center);
 	pFPS->SetColor(Color(255, 255, 255, 0));
-	pFPS->SetSize(IntVec(300, 50));
+	pFPS->SetSize(IntVec(300, 25));
 	pFPS->SetPosition(IntVec(0, 0));
 	pGui->GetRootElement()->AddChild(pFPS);
 
@@ -946,7 +971,7 @@ void CRatGame::Update()
 		explosionTimer = newtime;
 	}
 
-	pFPS->SetText(std::to_string(Time::fps) + " sprites rendered:" + std::to_string(SDLManager::drawnum));
+	pFPS->SetText("fps:" + std::to_string(Time::fps) + " sprites:" + std::to_string(SDLManager::drawnum));
 
 	if (Input::GetKey(KEY_R).pressed)
 	{
