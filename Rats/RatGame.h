@@ -115,7 +115,7 @@ struct CDirtLayer
 	void Update(IntVec vPos);
 	void OnResize();
 
-	std::weak_ptr<CTexture> pDirt1, pDirt2, pDirt3, pDirt4, pRock;
+	STextureRef pDirt1, pDirt2, pDirt3, pDirt4, pRock, pEmpty;
 
 };
 

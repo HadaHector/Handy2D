@@ -7,6 +7,7 @@ public:
 	static unsigned long long frameNumber;
 	static int fps;
 	static float fpsraw;
+	static float target_fps;
 
 	static void Init();
 	static void FrameBegin();

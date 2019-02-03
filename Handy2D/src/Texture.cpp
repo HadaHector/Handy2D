@@ -8,7 +8,7 @@ std::map<std::string, std::shared_ptr<CTexture>> CTexture::m_mStore;
 
 CTexture::CTexture()
 {
-
+	m_hash = std::hash<std::string>{}(m_sName);
 }
 
 CTexture::~CTexture()
@@ -63,17 +63,17 @@ void CTexture::UnloadTextures()
 	m_mStore.clear();
 }
 
-std::weak_ptr<CTexture> CTexture::GetTexture(const std::string& sName)
+STextureRef CTexture::GetTexture(const std::string& sName)
 {
 	auto it = m_mStore.find(sName);
 	if (it == m_mStore.end())
 	{
-		return std::weak_ptr<CTexture>();
+		return STextureRef();
 	}
 	return it->second;
 }
 
-std::weak_ptr<CTexture> CTexture::LoadTexture(const std::string& sFilePath, const std::string& sName)
+STextureRef CTexture::LoadTexture(const std::string& sFilePath, const std::string& sName)
 {
 	const std::string& sKey = sName.size() == 0 ? sFilePath : sName;
 
@@ -86,16 +86,18 @@ std::weak_ptr<CTexture> CTexture::LoadTexture(const std::string& sFilePath, cons
 	auto pTex = std::make_shared<CTexture>();
 	pTex->m_sFilePath = sFilePath;
 	pTex->m_sName = sKey;
+	pTex->m_hash = std::hash<std::string>{}(sKey);
 	m_mStore.insert(std::make_pair(pTex->m_sName, pTex));
 	pTex->Load();
 	return pTex;
 }
 
 
-std::weak_ptr<CTexture> CTexture::AddSurface(SDL_Surface* pSurface, const std::string& sName)
+STextureRef CTexture::AddSurface(SDL_Surface* pSurface, const std::string& sName)
 {
 	auto pTex = std::make_shared<CTexture>();
 	pTex->m_sName = sName;
+	pTex->m_hash = std::hash<std::string>{}(sName);
 	m_mStore.insert(std::make_pair(sName, pTex));
 
 

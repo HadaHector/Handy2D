@@ -31,6 +31,13 @@ public:
 	}
 };
 
+double Time::frame = 0;
+double Time::full = 0;
+unsigned long long Time::frameNumber = 0;
+float Time::fpsraw = 0.0f;
+int Time::fps = 0;
+float Time::target_fps = 60;
+
 namespace
 {
 	HeighResolutionClockKeeper MyHeighResolutionClockKeeper;
@@ -42,19 +49,14 @@ namespace
 	std::chrono::steady_clock::time_point start_point;
 	std::chrono::steady_clock::time_point frame_begin, frame_end, after;
 
-	const float target_fps = 60;
-	float tmp_target_fps = target_fps;
+	float tmp_target_fps = Time::target_fps;
 	auto target_frame_len = fsecond(1.0f / 60);
 	bool enable_fps_oscillation = true;
 	float accum_fps = 0.0f;
 	int frames_count = 0;
 }
 
-double Time::frame = 0;
-double Time::full = 0;
-unsigned long long Time::frameNumber = 0;
-float Time::fpsraw = 0.0f;
-int Time::fps = 0;
+
 
 void Time::Init()
 {
@@ -79,10 +81,10 @@ void Time::FrameEnd()
 	Time::frame = std::chrono::duration<double>(after - frame_begin).count();
 	Time::full = std::chrono::duration<double>(after - game_start).count();
 
-	if (_fps < target_fps) /// our real fps is less than what we want
-		tmp_target_fps += 0.03f; /// lets asl for more !
-	else if (_fps > target_fps) /// it is more than what we want
-		tmp_target_fps -= 0.03f; /// lets ask for less
+	if (_fps < Time::target_fps) /// our real fps is less than what we want
+		Time::target_fps += 0.03f; /// lets asl for more !
+	else if (_fps > Time::target_fps) /// it is more than what we want
+		Time::target_fps -= 0.03f; /// lets ask for less
 	if (enable_fps_oscillation == true)
 	{
 		/// now we will adjust our target frame length for match the new target FPS

@@ -447,6 +447,8 @@ void CRatGame::SetTileAtPos(Vec pos, ETile tile)
 
 bool CRatGame::Load()
 {
+	Time::target_fps = 120;
+
 	m_DirtLayer1.Load();
 	m_DirtLayer2.Load();
 	pCamera1 = new CCameraRenderLayer(IntRect(0, 0, 512, 512));
@@ -567,10 +569,10 @@ bool CRatGame::Load()
 	pGui->GetRootElement()->AddChild(pScore);
 
 	pFPS = new CGuiText();
-	pFPS->SetFont("consolab.ttf", 24);
+	pFPS->SetFont("consolab.ttf", 16);
 	pFPS->SetAlign(EHA_Left, EVA_Center);
 	pFPS->SetColor(Color(255, 255, 255, 0));
-	pFPS->SetSize(IntVec(100, 50));
+	pFPS->SetSize(IntVec(300, 50));
 	pFPS->SetPosition(IntVec(0, 0));
 	pGui->GetRootElement()->AddChild(pFPS);
 
@@ -944,7 +946,7 @@ void CRatGame::Update()
 		explosionTimer = newtime;
 	}
 
-	pFPS->SetText(std::to_string(Time::fps));
+	pFPS->SetText(std::to_string(Time::fps) + " sprites rendered:" + std::to_string(SDLManager::drawnum));
 
 	if (Input::GetKey(KEY_R).pressed)
 	{
@@ -1194,7 +1196,7 @@ void CDirtLayer::Update(IntVec vPos)
 	IntVec vMapOffset = vPos / TILE_SIZE;
 	vMapOffset += IntVec(1, 1);
 	IntVec vOffset = ((vPos / TILE_SIZE) * TILE_SIZE) - vPos;
-
+	Vec vOffset2 = vOffset + pDirtLayer->GetRect().GetUpperLeft(); 
 	for (int y = 0; y < Size.y; ++y)
 	{
 		for (int x = 0; x < Size.x; ++x)
@@ -1208,14 +1210,14 @@ void CDirtLayer::Update(IntVec vPos)
 				pDirtLayer->AddSprite(pSprite);
 			}
 
-			pSprite->SetPos(vOffset + Vec(TILE_SIZE * x, TILE_SIZE * y) + pDirtLayer->GetRect().GetUpperLeft());
+			pSprite->SetPos(vOffset2 + Vec(TILE_SIZE * x, TILE_SIZE * y));
 			pSprite->SetSize(Vec(TILE_SIZE, TILE_SIZE));
 
 			ETile tile = CRatGame::GetInstance()->GetTile(IntVec(x, y) + vMapOffset);
 			switch (tile)
 			{
 			case ET_Empty:
-				pSprite->SetTexture(std::weak_ptr<CTexture>());
+				pSprite->SetTexture(pEmpty);
 				break;
 			case ET_Dirt1:
 				pSprite->SetTexture(pDirt1);

@@ -42,10 +42,10 @@ public:
 	virtual ~CImageSprite();
 	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec());
 
-	virtual void SetTexture(std::weak_ptr<CTexture> pTexture);
+	virtual void SetTexture(STextureRef pTexture);
 
 protected:
-	std::weak_ptr<CTexture> m_pTexture;
+	STextureRef m_pTexture;
 };
 
 class CAnimSprite : public CImageSprite
@@ -54,7 +54,7 @@ public:
 	virtual ~CAnimSprite();
 
 	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec());
-	void SetTexture(std::weak_ptr<CTexture> pTexture);
+	void SetTexture(STextureRef pTexture);
 	void SetRowsAndCols(int row, int col)
 	{
 		m_nRows = row;
@@ -88,7 +88,7 @@ public:
 	virtual ~CTextSprite();
 
 	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec());
-	virtual void SetTexture(std::weak_ptr<CTexture> pTexture) {}; //not used
+	virtual void SetTexture(STextureRef pTexture) {}; //not used
 
 	void SetText(const std::string& sText) { m_sText = sText; }
 	std::string GetText() { return m_sText; }
