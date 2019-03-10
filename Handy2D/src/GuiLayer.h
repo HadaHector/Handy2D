@@ -1,4 +1,5 @@
 #pragma once
+#include "Macros.h"
 #include "RenderLayer.h"
 #include "TextboxSprite.h"
 #include <functional>
@@ -26,23 +27,25 @@ enum EVerticalAlign {
 class CGuiLayer;
 class CGuiElement;
 
+POINTER_TYPEDEFS(GuiElement)
+
 struct SClickEvent
 {
 	bool m_bPropagation = true;
 	IntVec m_vElemPos;
 	IntVec m_vScreenPos;
 	int m_nButton;
-	CGuiElement* m_pInitiator = nullptr;
+	WGuiElement m_pInitiator;
 };
 
-class CGuiElement
+class CGuiElement : public std::enable_shared_from_this<CGuiElement>
 {
 public:
 	CGuiElement();
 	virtual EGuiResizeEffect GetResizeEffect() { return EGuiResizeEffect::None; }
-	std::vector<CGuiElement*>& GetChildren() { return m_aChildren; }
+	std::vector<PGuiElement>& GetChildren() { return m_aChildren; }
 
-	void AddChild(CGuiElement* elem);
+	void AddChild(PGuiElement elem);
 	virtual void SetPosition(const IntVec& pos) { m_vPosition = pos; }
 	IntVec GetPosition() const { return m_vPosition; }
 	virtual void SetSize(const IntVec& size) { m_vSize = size; }
@@ -59,13 +62,13 @@ public:
 	bool IsVisible() const { return m_bVisible; }
 protected:
 
-	std::vector<CGuiElement*> m_aChildren;
+	std::vector<PGuiElement> m_aChildren;
 	bool m_bVisible = true;
 	IntVec m_vPosition;
 	IntVec m_vSize;
 
 	CGuiLayer* m_pLayer = nullptr;
-	CGuiElement* m_pParent = nullptr;
+	WGuiElement m_pParent;
 
 	std::map<std::string, std::string> m_mProperties;
 
@@ -97,6 +100,8 @@ private:
 	IntVec m_vUsedSize;
 };
 
+POINTER_TYPEDEFS(GuiImage)
+
 class CGuiText : public CGuiElement
 {
 public:
@@ -122,6 +127,8 @@ private:
 	EValidity m_eValid = EUnknown;
 };
 
+POINTER_TYPEDEFS(GuiText)
+
 class CGuiTextbox : public CGuiElement
 {
 public:
@@ -142,26 +149,19 @@ private:
 	EValidity m_eValid = EUnknown;
 };
 
+POINTER_TYPEDEFS(GuiTextbox)
+
 struct SAlignSettings
 {
 	IntVec size;
 
 };
 
-class CGuiAlignContainer : public CGuiElement
-{
-public:
-	CGuiAlignContainer();
-private:
-	std::map<CGuiElement*, SAlignSettings> m_mChildAligns;
-};
-
-
 struct ElementRect
 {
 	ElementRect() {};
 	IntRect rect;
-	CGuiElement* element;
+	WGuiElement element;
 };
 
 class CGuiLayer :
@@ -173,12 +173,14 @@ public:
 
 	void Render();
 	virtual void HandleEvents() override;
-	void AddRenderData(std::weak_ptr<CSprite> pSprite, CGuiElement* pElem);
-	CGuiElement* GetRootElement() { return m_pRoot; }
+	void AddRenderData(std::weak_ptr<CSprite> pSprite, WGuiElement pElem);
+	PGuiElement GetRootElement() { return m_pRoot; }
 private:
-	CGuiElement* m_pRoot;
+	PGuiElement m_pRoot;
 
 	std::vector<std::weak_ptr<CSprite>> m_aRenderArray;
 	std::vector<ElementRect> m_aRects;
 };
+
+POINTER_TYPEDEFS(GuiLayer)
 

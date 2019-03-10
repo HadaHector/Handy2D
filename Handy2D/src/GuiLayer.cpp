@@ -10,17 +10,17 @@ void CGuiElement::Render()
 {
 	if (m_bVisible)
 	{
-		for (CGuiElement* elem : m_aChildren)
+		for (PGuiElement elem : m_aChildren)
 		{
-			elem->Render();
+			if (elem) elem->Render();
 		}
 	}
 }
 
-void CGuiElement::AddChild(CGuiElement* elem)
+void CGuiElement::AddChild(PGuiElement elem)
 {
 	elem->m_pLayer = m_pLayer;
-	elem->m_pParent = this;
+	elem->m_pParent = shared_from_this();
 	m_aChildren.push_back(elem);
 }
 
@@ -31,9 +31,9 @@ void CGuiElement::OnClick(SClickEvent& Event)
 		func(Event);
 	}
 
-	if (Event.m_bPropagation && m_pParent)
+	if (Event.m_bPropagation && !m_pParent.expired())
 	{
-		m_pParent->OnClick(Event);
+		m_pParent.lock()->OnClick(Event);
 	}
 }
 
@@ -46,7 +46,7 @@ int CGuiElement::AddClickEventListener(std::function<void(SClickEvent&)> Event)
 
 CGuiLayer::CGuiLayer(const IntRect& Rect) : CRenderLayer(Rect)
 {
-	m_pRoot = new CGuiElement();
+	m_pRoot = PNEW(CGuiElement);
 	m_pRoot->SetLayer(this);
 }
 
@@ -89,14 +89,14 @@ void CGuiLayer::HandleEvents()
 				nButton = MOUSE_MIDDLE;
 			}
 
-			if (nButton != 0)
+			if (nButton != 0 && !m_aRects[i].element.expired())
 			{
 				SClickEvent Event;
 				Event.m_nButton = nButton;
 				Event.m_vScreenPos = mouse;
 				Event.m_vElemPos = mouse - rect.GetUpperLeft();
 				Event.m_pInitiator = m_aRects[i].element;
-				m_aRects[i].element->OnClick(Event);
+				m_aRects[i].element.lock()->OnClick(Event);
 			}
 
 			break;
@@ -106,7 +106,7 @@ void CGuiLayer::HandleEvents()
 	m_aRects.clear();
 }
 
-void CGuiLayer::AddRenderData(std::weak_ptr<CSprite> pSprite, CGuiElement* pElem)
+void CGuiLayer::AddRenderData(std::weak_ptr<CSprite> pSprite, WGuiElement pElem)
 {
 	m_aRenderArray.push_back(pSprite);
 	ElementRect Rect;
@@ -188,7 +188,7 @@ void CGuiImage::Render()
 
 		m_pSprite->SetPos(m_vPosition);
 		m_pSprite->SetSize(m_vUsedSize);
-		m_pLayer->AddRenderData(m_pSprite, this);
+		m_pLayer->AddRenderData(m_pSprite, shared_from_this());
 	}
 
 	CGuiElement::Render();
@@ -247,7 +247,7 @@ void CGuiText::Render()
 
 		m_pSprite->SetPos(m_vPosition);
 		m_pSprite->SetSize(m_vSize);
-		m_pLayer->AddRenderData(m_pSprite, this);
+		m_pLayer->AddRenderData(m_pSprite, shared_from_this());
 	}
 
 	CGuiElement::Render();
@@ -298,7 +298,7 @@ void CGuiTextbox::Render()
 
 		m_pSprite->SetPos(m_vPosition);
 		m_pSprite->SetSize(m_vSize);
-		m_pLayer->AddRenderData(m_pSprite, this);
+		m_pLayer->AddRenderData(m_pSprite, shared_from_this());
 	}
 
 	CGuiElement::Render();

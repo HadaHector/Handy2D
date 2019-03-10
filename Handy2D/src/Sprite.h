@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "Macros.h"
 #include "Texture.h"
 #include "Geometry.h"
 #include "RenderLayer.h"
@@ -34,6 +35,8 @@ protected:
 	Vec m_Position, m_Size;
 };
 
+POINTER_TYPEDEFS(Sprite)
+
 
 class CImageSprite : public CSprite
 {
@@ -47,6 +50,8 @@ public:
 protected:
 	STextureRef m_pTexture;
 };
+
+POINTER_TYPEDEFS(ImageSprite)
 
 class CAnimSprite : public CImageSprite
 {
@@ -78,6 +83,8 @@ private:
 	int m_nFrame = 0;
 };
 
+POINTER_TYPEDEFS(AnimSprite)
+
 struct _TTF_Font;
 
 
@@ -108,3 +115,5 @@ private:
 	_TTF_Font* m_pFont = nullptr;
 	float m_fAlignX = 0.0f, m_fAlignY = 0.0f;
 };
+
+POINTER_TYPEDEFS(TextSprite)

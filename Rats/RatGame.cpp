@@ -511,7 +511,7 @@ bool CRatGame::Load()
 	{
 		for (int y = -1; y < 3; ++y)
 		{
-			std::shared_ptr<CImageSprite> pBg = std::make_shared<CImageSprite>();
+			PImageSprite pBg = PNEW(CImageSprite);
 			pBg->SetTexture(CTexture::GetTexture("resources/bg.png"));
 			pBg->SetSize(2048, 2048);
 			pBg->SetPos(Vec(2048 * x, 2048 * y));
@@ -543,37 +543,38 @@ bool CRatGame::Load()
 
 	for (int i = 0; i < 5; ++i)
 	{
-		pBg[i] = new CGuiImage();
+
+		pBg[i] = PNEW(CGuiImage);
 		pBg[i]->SetImage("resources/black.png");
 		pGui->GetRootElement()->AddChild(pBg[i]);
 	}
 
 
-	pLeftBar1Bg = new CGuiImage();
+	pLeftBar1Bg = PNEW(CGuiImage);
 	pLeftBar1Bg->SetImage("resources/barbg.png");
-	pLeftBar2Bg = new CGuiImage();
+	pLeftBar2Bg = PNEW(CGuiImage);
 	pLeftBar2Bg->SetImage("resources/barbg.png");
-	pRightBar1Bg = new CGuiImage();
+	pRightBar1Bg = PNEW(CGuiImage);
 	pRightBar1Bg->SetImage("resources/barbg.png");
-	pRightBar2Bg = new CGuiImage();
+	pRightBar2Bg = PNEW(CGuiImage);
 	pRightBar2Bg->SetImage("resources/barbg.png");
 
-	pLeftHpBar = new CGuiImage();
+	pLeftHpBar = PNEW(CGuiImage);
 	pLeftHpBar->SetImage("resources/hpbar.png");
-	pRightHpBar = new CGuiImage();
+	pRightHpBar = PNEW(CGuiImage);
 	pRightHpBar->SetImage("resources/hpbar.png");
-	pLeftEnergyBar = new CGuiImage();
+	pLeftEnergyBar = PNEW(CGuiImage);
 	pLeftEnergyBar->SetImage("resources/energybar.png");
-	pRightEnergyBar = new CGuiImage();
+	pRightEnergyBar = PNEW(CGuiImage);
 	pRightEnergyBar->SetImage("resources/energybar.png");
 
-	pLeftEnergyIcon = new CGuiImage();
+	pLeftEnergyIcon = PNEW(CGuiImage);
 	pLeftEnergyIcon->SetImage("resources/energy.png");
-	pRightEnergyIcon = new CGuiImage();
+	pRightEnergyIcon = PNEW(CGuiImage);
 	pRightEnergyIcon->SetImage("resources/energy.png");
-	pLeftHealthIcon = new CGuiImage();
+	pLeftHealthIcon = PNEW(CGuiImage);
 	pLeftHealthIcon->SetImage("resources/health.png");
-	pRightHealthIcon = new CGuiImage();
+	pRightHealthIcon = PNEW(CGuiImage);
 	pRightHealthIcon->SetImage("resources/health.png");
 
 	pGui->GetRootElement()->AddChild(pLeftBar1Bg);
@@ -589,11 +590,11 @@ bool CRatGame::Load()
 	pGui->GetRootElement()->AddChild(pLeftHealthIcon);
 	pGui->GetRootElement()->AddChild(pRightHealthIcon);
 
-	pScore = new CGuiTextbox();
+	pScore = PNEW(CGuiTextbox);
 	pScore->SetAlign(EHA_Center, EVA_Center);
 	pGui->GetRootElement()->AddChild(pScore);
 
-	pFPS = new CGuiText();
+	pFPS = PNEW(CGuiText);
 	pFPS->SetFont("consola.ttf", 12);
 	pFPS->SetAlign(EHA_Left, EVA_Center);
 	pFPS->SetColor(Color(255, 255, 255, 0));
@@ -601,10 +602,10 @@ bool CRatGame::Load()
 	pFPS->SetPosition(IntVec(0, 0));
 	pGui->GetRootElement()->AddChild(pFPS);
 
-	pMenu = new CGuiElement();
+	pMenu = PNEW(CGuiElement);
 	pGui->GetRootElement()->AddChild(pMenu);
 
-	pMenuBg = new CGuiImage();
+	pMenuBg = PNEW(CGuiImage);
 	pMenuBg->SetImage("resources/bg.png");
 	pMenuBg->SetPosition(IntVec(0, 0));
 	pMenu->AddChild(pMenuBg);
@@ -612,14 +613,14 @@ bool CRatGame::Load()
 	CTexture::LoadTexture("resources/title.png");
 	CTexture::LoadTexture("resources/button.png");
 
-	pTitleImg = new CGuiImage();
+	pTitleImg = PNEW(CGuiImage);
 	pTitleImg->SetImage("resources/title.png");
 	pTitleImg->SetSize(IntVec(512,256)*2);
 	pTitleImg->SetPosition(IntVec(0, 0));
 	pMenu->AddChild(pTitleImg);
 
 	{
-		pPlayerText1 = new CGuiTextbox();
+		pPlayerText1 = PNEW(CGuiTextbox);   
 		STextBlock b1;
 		b1.SetFont("consolab.ttf");
 		b1.SetFontSize(32);
@@ -641,7 +642,7 @@ bool CRatGame::Load()
 	}
 
 	{
-		pPlayerText2 = new CGuiTextbox();
+		pPlayerText2 = PNEW(CGuiTextbox);
 		STextBlock b1;
 		b1.SetFont("consolab.ttf");
 		b1.SetFontSize(32);
@@ -662,7 +663,7 @@ bool CRatGame::Load()
 		pMenu->AddChild(pPlayerText2);
 	}
 
-	pStartButton = new CGuiImage();
+	pStartButton = PNEW(CGuiImage);
 	pStartButton->SetImage("resources/button.png");
 	pStartButton->SetSize(IntVec(256, 128));
 	pMenu->AddChild(pStartButton);
@@ -672,7 +673,7 @@ bool CRatGame::Load()
 		ResetGame();
 	});
 
-	pStart = new CGuiText();
+	pStart = PNEW(CGuiText);
 	pStart->SetText("Start");
 	pStart->SetFont("consolab.ttf",32);
 	pStart->SetSize(IntVec(256, 128));
@@ -681,15 +682,15 @@ bool CRatGame::Load()
 	pStartButton->AddChild(pStart);
 
 
-	pGameOverBg = new CGuiImage();
+	pGameOverBg = PNEW(CGuiImage);
 	pGameOverBg->SetImage("resources/black.png");
 	pGameOverBg->SetVisible(false);
 	pGui->GetRootElement()->AddChild(pGameOverBg);
 
-	pOverviewMapImage = new CGuiImage();
+	pOverviewMapImage = PNEW(CGuiImage);
 	pGameOverBg->AddChild(pOverviewMapImage);
 
-	pGameOverText = new CGuiTextbox();
+	pGameOverText = PNEW(CGuiTextbox);
 	pGameOverText->SetAlign(EHA_Center, EVA_Center);
 	pGameOverBg->AddChild(pGameOverText);
 
@@ -1073,7 +1074,7 @@ void CRatGame::UpdateGui()
 	float iconsize = vWinSize.y*0.03f;
 	float offset = iconsize * 1.5f;
 
-	for (CGuiImage* pImg : { pLeftBar1Bg ,pLeftBar2Bg ,pRightBar1Bg ,pRightBar2Bg })
+	for (const PGuiImage& pImg : { pLeftBar1Bg ,pLeftBar2Bg ,pRightBar1Bg ,pRightBar2Bg })
 	{
 		pImg->SetSize(IntVec((int)(vWinSize.x*0.3f - offset), (int)(vWinSize.y*0.03f)));
 	}
@@ -1121,7 +1122,7 @@ void CRatGame::UpdateGui()
 	pRightBar2Bg->SetPosition(r2);
 	pRightEnergyBar->SetPosition(r2);
 
-	for (CGuiImage* pImg : { pLeftEnergyIcon ,pLeftHealthIcon, pRightEnergyIcon, pRightHealthIcon })
+	for (const PGuiImage& pImg : { pLeftEnergyIcon ,pLeftHealthIcon, pRightEnergyIcon, pRightHealthIcon })
 	{
 		pImg->SetSize(IntVec((int)(iconsize), (int)(iconsize)));
 	}

@@ -121,7 +121,7 @@ struct CDirtLayer
 
 class CRatGame : public CGameLogic
 {
-	std::vector<CGuiImage*> aImages;
+	std::vector<PGuiImage> aImages;
 	std::shared_ptr<CGameObject> root;
 	std::weak_ptr<CRat> m_rat1, m_rat2;
 	std::weak_ptr<CBase> m_base1, m_base2;
@@ -132,14 +132,14 @@ class CRatGame : public CGameLogic
 	CDirtLayer m_DirtLayer1, m_DirtLayer2;
 	CGuiLayer *pGui;
 
-	CGuiImage *pLeftBar1Bg, *pLeftBar2Bg, *pRightBar1Bg, *pRightBar2Bg;
-	CGuiImage *pLeftHpBar, *pLeftEnergyBar, *pRightHpBar, *pRightEnergyBar;
-	CGuiImage *pLeftEnergyIcon, *pLeftHealthIcon, *pRightEnergyIcon, *pRightHealthIcon;
-	CGuiImage *pMenuBg, *pTitleImg, *pStartButton, *pOverviewMapImage, *pGameOverBg;
-	CGuiTextbox *pPlayerText1, *pPlayerText2, *pStartText, *pScore, *pGameOverText;
+	PGuiImage pLeftBar1Bg, pLeftBar2Bg, pRightBar1Bg, pRightBar2Bg;
+	PGuiImage pLeftHpBar, pLeftEnergyBar, pRightHpBar, pRightEnergyBar;
+	PGuiImage pLeftEnergyIcon, pLeftHealthIcon, pRightEnergyIcon, pRightHealthIcon;
+	PGuiImage pMenuBg, pTitleImg, pStartButton, pOverviewMapImage, pGameOverBg;
+	PGuiTextbox pPlayerText1, pPlayerText2, pStartText, pScore, pGameOverText;
 
-	CGuiText *pStart, *pFPS;
-	CGuiImage* pBg[5];
+	PGuiText pStart, pFPS;
+	PGuiImage pBg[5];
 
 	class CPaintedImage *pMapImage;
 
@@ -158,7 +158,7 @@ class CRatGame : public CGameLogic
 	IntVec vExplosion;
 	double explosionTimer = -1;
 
-	CGuiElement* pMenu;
+	PGuiElement pMenu;
 
 public:
 	CRatGame() { m_pInstance = this; }
