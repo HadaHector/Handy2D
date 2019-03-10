@@ -13,6 +13,8 @@
 #include "CollisionManager.h"
 #include "SDL_mixer.h"
 
+//#include "vld.h"
+
 
 
 class SDLEventHandler

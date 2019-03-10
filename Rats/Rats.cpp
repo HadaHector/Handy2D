@@ -1,7 +1,10 @@
+
 #include "SDLManager.h"
 #include "RatGame.h"
 
 #include <Windows.h>
+
+//#include "vld.h"
 
 
 
@@ -18,6 +21,6 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	
 	CRatGame* pGame = new CRatGame();
 	SDLManager::Start(Params, pGame);
-	
+
 	return 0;
 }
