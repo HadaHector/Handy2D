@@ -17,6 +17,16 @@ struct Color
 		a = ((unsigned char*)(&code))[0];
 	}
 
+	operator unsigned int() const
+	{
+		int ret;
+		((unsigned char*)(&ret))[3] = r;
+		((unsigned char*)(&ret))[2] = g;
+		((unsigned char*)(&ret))[1] = b;
+		((unsigned char*)(&ret))[0] = a;
+		return ret;
+	}
+
 	unsigned int forSurface(SDL_Surface* pSurface);
 
 	operator SDL_Color() const;

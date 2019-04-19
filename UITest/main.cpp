@@ -1,4 +1,5 @@
 #include "SDLManager.h"
+#include "GuiLayer.h"
 #include <Windows.h>
 
 
@@ -10,11 +11,16 @@ class CUITest : public CGameLogic
 {
 	virtual bool Load() override
 	{
-		return false;
+		Image = PNEW(CGuiImage);
+
+
+		return true;
 	}
 	virtual void Update() override
 	{
 	}
+
+	PGuiElement Image;
 };
 
 
