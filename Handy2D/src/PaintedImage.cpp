@@ -62,7 +62,7 @@ void CPaintedImage::Fill(std::function<int(int, int)> fn)
 		}
 }
 
-void CPaintedImage::CreateTexture(const std::string& sName)
+STextureRef CPaintedImage::CreateTexture(const std::string& sName)
 {
-	CTexture::AddSurface(m_pSurface, sName);
+	return CTexture::AddSurface(m_pSurface, sName);
 }

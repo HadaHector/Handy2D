@@ -20,10 +20,10 @@ struct Color
 	operator unsigned int() const
 	{
 		int ret;
-		((unsigned char*)(&ret))[3] = r;
-		((unsigned char*)(&ret))[2] = g;
-		((unsigned char*)(&ret))[1] = b;
-		((unsigned char*)(&ret))[0] = a;
+		((unsigned char*)(&ret))[3] = a;
+		((unsigned char*)(&ret))[2] = b;
+		((unsigned char*)(&ret))[1] = g;
+		((unsigned char*)(&ret))[0] = r;
 		return ret;
 	}
 

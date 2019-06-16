@@ -2,6 +2,7 @@
 #include <functional>
 
 struct SDL_Surface;
+struct STextureRef;
 
 class CPaintedImage
 {
@@ -20,7 +21,7 @@ public:
 
 	void Fill(std::function<int(int, int)> fn);
 
-	void CreateTexture(const std::string& sName);
+	STextureRef CreateTexture(const std::string& sName);
 
 	SDL_Surface* GetData() { return m_pSurface; }
 
