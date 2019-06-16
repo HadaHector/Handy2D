@@ -33,6 +33,11 @@ CC64RenderLayer::CC64RenderLayer(const IntRect & rect) :
 	pImage->SetSize(rect.GetSize());
 	pImage->SetTexture(CTexture::GetTexture(m_sName));
 	m_pSprite = pImage;
+
+
+	//load font bitmaps
+
+
 }
 
 void CC64RenderLayer::SetName(const std::string& sName)
