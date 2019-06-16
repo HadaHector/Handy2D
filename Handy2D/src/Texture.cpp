@@ -95,11 +95,20 @@ STextureRef CTexture::LoadTexture(const std::string& sFilePath, const std::strin
 
 STextureRef CTexture::AddSurface(SDL_Surface* pSurface, const std::string& sName)
 {
-	auto pTex = std::make_shared<CTexture>();
-	pTex->m_sName = sName;
-	pTex->m_hash = std::hash<std::string>{}(sName);
-	m_mStore.insert(std::make_pair(sName, pTex));
+	std::shared_ptr<CTexture> pTex;
 
+	auto it = m_mStore.find(sName);
+	if (it != m_mStore.end())
+	{
+		pTex = it->second;
+	}
+	else
+	{
+		pTex = std::make_shared<CTexture>();
+		pTex->m_sName = sName;
+		pTex->m_hash = std::hash<std::string>{}(sName);
+		m_mStore.insert(std::make_pair(sName, pTex));
+	}
 
 	pTex->m_pTexture = SDL_CreateTextureFromSurface(SDLManager::Instance.GetRenderer(), pSurface);
 	if (pTex->m_pTexture == nullptr)

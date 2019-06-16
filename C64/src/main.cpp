@@ -28,8 +28,21 @@ public:
 
 	virtual void Update() override
 	{
+		m_dFrametimer += Time::frame;
+		if (m_dFrametimer < 0.02) return;
+		
+		m_dFrametimer = 0;
 
+		iTest++;
+
+
+		SC64Char Char;
+		Char.cBG = EC64Color::cyan;
+		m_pC64->SetCharacter(iTest%40, 1, Char);
 	}
+
+	int iTest = 0;
+	double m_dFrametimer;
 
 	CC64RenderLayer* m_pC64;
 };
