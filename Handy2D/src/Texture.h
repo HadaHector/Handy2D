@@ -13,6 +13,7 @@ class CTexture
 {
 private:
 	SDL_Texture* m_pTexture = nullptr;
+	SDL_Surface* m_pSurface = nullptr;
 	IntVec m_Size;
 
 	std::string m_sFilePath;
@@ -22,13 +23,13 @@ private:
 	std::string m_sError;
 	size_t m_hash;
 
-	void Load();
+	void Load( bool bKeepSurface = false );
 public:
 
 	CTexture(); //do not use!
 	virtual ~CTexture();
 
-	static STextureRef LoadTexture(const std::string& sFilePath, const std::string& sName = "");
+	static STextureRef LoadTexture(const std::string& sFilePath, const std::string& sName = "", bool bKeepSurface = false);
 	static STextureRef AddSurface(SDL_Surface* pSurface, const std::string& sName);
 	static void UnloadTextures();
 	static STextureRef GetTexture(const std::string& sName);
@@ -36,6 +37,7 @@ public:
 	static std::map<std::string, std::shared_ptr<CTexture>> m_mStore;
 
 	SDL_Texture* GetTexture();
+	SDL_Surface* GetSurface();
 	size_t GetHash() const { return m_hash; }
 	IntVec GetSize() const { return m_Size; }
 	

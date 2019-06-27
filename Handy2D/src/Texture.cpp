@@ -25,10 +25,15 @@ SDL_Texture* CTexture::GetTexture()
 	return m_pTexture;
 }
 
-void CTexture::Load()
+SDL_Surface* CTexture::GetSurface()
 {
-	SDL_Surface* loadedSurface = IMG_Load(m_sFilePath.c_str());
-	if (loadedSurface == nullptr)
+	return m_pSurface;
+}
+
+void CTexture::Load(bool bKeepSurface)
+{
+	m_pSurface = IMG_Load(m_sFilePath.c_str());
+	if (m_pSurface == nullptr)
 	{
 		printf("Unable to load image %s! SDL_image Error: %s\n", m_sFilePath.c_str(), IMG_GetError());
 		m_bError = true;
@@ -37,7 +42,7 @@ void CTexture::Load()
 	else
 	{
 		//Create texture from surface pixels
-		m_pTexture = SDL_CreateTextureFromSurface(SDLManager::Instance.GetRenderer(), loadedSurface);
+		m_pTexture = SDL_CreateTextureFromSurface(SDLManager::Instance.GetRenderer(), m_pSurface);
 		if (m_pTexture == nullptr)
 		{
 			printf("Unable to create texture from %s! SDL Error: %s\n", m_sFilePath.c_str(), SDL_GetError());
@@ -46,13 +51,17 @@ void CTexture::Load()
 		}
 		else
 		{
-			m_Size.x = loadedSurface->w;
-			m_Size.y = loadedSurface->h;			
+			m_Size.x = m_pSurface->w;
+			m_Size.y = m_pSurface->h;
 			m_bLoaded = true;
 		}
 
-		//Get rid of old loaded surface
-		SDL_FreeSurface(loadedSurface);
+		if (!bKeepSurface)
+		{
+			//Get rid of old loaded surface
+			SDL_FreeSurface(m_pSurface);
+			m_pSurface = nullptr;
+		}	
 	}
 }
 
@@ -73,7 +82,7 @@ STextureRef CTexture::GetTexture(const std::string& sName)
 	return it->second;
 }
 
-STextureRef CTexture::LoadTexture(const std::string& sFilePath, const std::string& sName)
+STextureRef CTexture::LoadTexture(const std::string& sFilePath, const std::string& sName, bool bKeepSurface)
 {
 	const std::string& sKey = sName.size() == 0 ? sFilePath : sName;
 
@@ -88,7 +97,7 @@ STextureRef CTexture::LoadTexture(const std::string& sFilePath, const std::strin
 	pTex->m_sName = sKey;
 	pTex->m_hash = std::hash<std::string>{}(sKey);
 	m_mStore.insert(std::make_pair(pTex->m_sName, pTex));
-	pTex->Load();
+	pTex->Load(bKeepSurface);
 	return pTex;
 }
 
@@ -101,6 +110,10 @@ STextureRef CTexture::AddSurface(SDL_Surface* pSurface, const std::string& sName
 	if (it != m_mStore.end())
 	{
 		pTex = it->second;
+		if (pTex->m_pTexture)
+		{
+			SDL_DestroyTexture(pTex->m_pTexture);
+		}
 	}
 	else
 	{

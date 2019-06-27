@@ -18,12 +18,30 @@ public:
 		m_pC64 = new CC64RenderLayer(IntRect(0, 0, 1280, 800));
 		SDLManager::Instance.AddLayer(m_pC64);
 
-		SC64Char Char;
-		Char.cBG = EC64Color::cyan;
-		m_pC64->SetCharacter(1, 1, Char);
-
+		for (int i = 0; i < 16; ++i)
+		{
+			for (int j = 0; j < 40; ++j)
+			{
+				SC64Char Char;
+				Char.cBG = (EC64Color)i;
+				m_pC64->SetCharacter(j, i+1, Char);
+			}
+		}
+		
+		WriteText("COMMODORE 64 DISPLAY", 0, 0);
 		m_pC64->Redraw();
 		return true;
+	}
+
+	void WriteText(const std::string& str, int x, int y)
+	{
+		for (int i = 0; i < str.size(); ++i)
+		{
+			if (x + i > 39) return;
+			SC64Char Char = m_pC64->GetCharacter(x+i, y);
+			Char.SetCharacter(str[i], false);
+			m_pC64->SetCharacter(x + i, y, Char);
+		}
 	}
 
 	virtual void Update() override
@@ -35,10 +53,9 @@ public:
 
 		iTest++;
 
-
-		SC64Char Char;
-		Char.cBG = EC64Color::cyan;
-		m_pC64->SetCharacter(iTest%40, 1, Char);
+		
+		
+		
 	}
 
 	int iTest = 0;
@@ -58,9 +75,10 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SWindowParams Params;
 	Params.nWidth = 1280;
 	Params.nHeight = 800;
-	Params.sTitle = "Strategy Breakout";
+	Params.sTitle = "C64 display";
 	Params.bResizeAble = false;
 	Params.bMaximized = false;
+	//Params.bFullscreen = true;
 
 	CBreakoutGame* pGame = new CBreakoutGame();
 	SDLManager::Start(Params, pGame);

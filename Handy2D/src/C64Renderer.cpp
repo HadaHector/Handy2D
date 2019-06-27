@@ -1,6 +1,6 @@
 #pragma once
 #include "C64Renderer.h"
-
+#include "SDL.h"
 
 namespace
 {
@@ -23,6 +23,8 @@ namespace
 		{0,136,255,255},    //14 light blue
 		{187,187,187,255}   //15 light grey
 	};
+
+	SDL_Surface* g_pCharacters = nullptr;
 }
 
 CC64RenderLayer::CC64RenderLayer(const IntRect & rect) :
@@ -36,8 +38,15 @@ CC64RenderLayer::CC64RenderLayer(const IntRect & rect) :
 
 
 	//load font bitmaps
-
-
+	auto TexRef = CTexture::LoadTexture("resources/c64chars.bmp", "c64chars", true);
+	if (TexRef)
+	{
+		auto pSurface = TexRef.lock()->GetSurface();
+		if (pSurface)
+		{
+			g_pCharacters = pSurface;
+		}
+	}
 }
 
 void CC64RenderLayer::SetName(const std::string& sName)
@@ -94,5 +103,18 @@ void CC64RenderLayer::Render()
 		}
 
 		m_pSprite->Render(*this);
+	}
+}
+
+void SC64Char::SetCharacter(char iChar, bool bShifted)
+{
+	if (!g_pCharacters) return;
+
+	for (int x = 0; x < 8; ++x)
+	{
+		for (int y = 0; y < 8; ++y)
+		{
+			aPixels[x + y * 8] = ((unsigned char*)(g_pCharacters->pixels))[8 * (iChar % 16) + x + (8 * (iChar / 16) + y + (bShifted?0:16*8)) * (16 * 8)] ? true : false;
+		}
 	}
 }

@@ -31,6 +31,7 @@ struct SC64Char
 	{
 		for (int i = 0; i < 8 * 8; ++i) aPixels[i] = false;
 	}
+	void SetCharacter(char iChar, bool bShifted);
 };
 
 class CC64RenderLayer : public CRenderLayer
@@ -57,5 +58,4 @@ protected:
 	std::shared_ptr<CImageSprite> m_pSprite;
 
 	void DrawCharacter(int x, int y);
-
 };
