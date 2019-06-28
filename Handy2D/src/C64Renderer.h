@@ -46,6 +46,7 @@ public:
 
 	SC64Char GetCharacter(int x, int y) const;
 	void SetCharacter(int x, int y, const SC64Char& Char);
+	void SetPixel(int x, int y, bool bOn);
 
 	void Redraw();
 

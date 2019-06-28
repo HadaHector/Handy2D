@@ -69,6 +69,15 @@ void CC64RenderLayer::SetCharacter(int x, int y, const SC64Char & Char)
 	DrawCharacter(x, y);
 }
 
+void CC64RenderLayer::SetPixel(int x, int y, bool bOn)
+{
+	int bigx = x / 8;
+	int bigy = y / 8;
+	m_aChars[bigx + bigy * 40].aPixels[(y - bigy*8) * 8 + x - bigx*8] = bOn;
+	m_bDirty = true;
+}
+
+
 void CC64RenderLayer::Redraw()
 {
 	for (int x = 0; x < 40; ++x)
