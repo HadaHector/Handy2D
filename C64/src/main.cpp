@@ -9,8 +9,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 
 	SWindowParams Params;
-	Params.nWidth = 1280;
-	Params.nHeight = 800;
+	Params.nWidth = 960;
+	Params.nHeight = 600;
 	Params.sTitle = "C64 display";
 	Params.bResizeAble = false;
 	Params.bMaximized = false;

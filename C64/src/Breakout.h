@@ -18,9 +18,11 @@ struct SBrick
 {
 	EMaterial m_eMaterial;
 	int m_nHp;
+	bool m_bDirty = false;
 
 	SC64Char GetChar(bool bRight);
 	void SetMaterial(EMaterial mat);
+	void Hit();
 };
 
 
@@ -32,6 +34,7 @@ public:
 
 	void WriteText(const std::string& str, int x, int y);
 
+	SBrick* GetBrickAtPixel(IntVec pos);
 	SC64Char LoadCharFromFile(const std::string& path);
 	void LoadChars();
 	void InitLevel();

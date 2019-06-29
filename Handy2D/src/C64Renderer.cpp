@@ -79,6 +79,14 @@ void CC64RenderLayer::SetPixel(int x, int y, bool bOn)
 	m_bDirty = true;
 }
 
+//beallitja annak a karakternek a szineit amin a pixel van
+void CC64RenderLayer::SetPixelColor(int x, int y, EC64Color cBG, EC64Color cFG)
+{
+	int bigx = x / 8;
+	int bigy = y / 8;
+	m_aChars[bigx + bigy * 40].cBG = cBG;
+	m_aChars[bigx + bigy * 40].cFG = cFG;
+}
 
 void CC64RenderLayer::Redraw()
 {

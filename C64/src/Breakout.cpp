@@ -42,7 +42,19 @@ void SBrick::SetMaterial(EMaterial mat)
 	}
 }
 
+void SBrick::Hit()
+{
+	if (m_nHp > 0)
+	{
+		m_nHp -= 1;
+	}
 
+	if (m_nHp == 0)
+	{
+		m_eMaterial = EM_NONE;
+		m_bDirty = true;
+	}
+}
 
 void CBreakoutGame::LoadChars()
 {
@@ -58,7 +70,7 @@ void CBreakoutGame::InitLevel()
 		for (int x = 0; x < LEVEL_WIDTH; ++x)
 		{
 			SBrick Brick;
-			Brick.m_eMaterial = (x + y) % 2 ? EM_NONE : EM_WOOD;
+			Brick.SetMaterial((x + y) % 2 ? EM_NONE : EM_WOOD);
 			m_aBricks.push_back(Brick);
 		}
 	}
@@ -83,15 +95,28 @@ bool CBreakoutGame::Load()
 
 	LoadChars();
 
-	m_pC64 = new CC64RenderLayer(IntRect(0, 0, 1280, 800));
+	m_pC64 = new CC64RenderLayer(IntRect(0, 0, 960, 600));
 	SDLManager::Instance.AddLayer(m_pC64);
 
 	InitLevel();
 
+	m_pC64->Redraw();
+
 	m_vBallPos = { 100,50 };
 	m_vBallSpeed = { 1,1 };
-	m_nBallVelocity = 5;
+	m_nBallVelocity = 1;
 	return true;
+}
+
+SBrick * CBreakoutGame::GetBrickAtPixel(IntVec pos)
+{
+	IntVec BrickCoord(pos.x / 16, pos.y / 8);
+	int iIndex = BrickCoord.y * 20 + BrickCoord.x;
+	if (iIndex > 0 && iIndex < m_aBricks.size())
+	{
+		return &m_aBricks[iIndex];
+	}
+	return nullptr;
 }
 
 SC64Char CBreakoutGame::LoadCharFromFile(const std::string& path)
@@ -105,7 +130,7 @@ SC64Char CBreakoutGame::LoadCharFromFile(const std::string& path)
 	SC64Char OutChar;
 
 	int counter = 0;
-	for (int i = 0; i < sChars.size(); ++i)
+	for (unsigned int i = 0; i < sChars.size(); ++i)
 	{
 		if (sChars[i] == '0' || sChars[i] == '1')
 		{
@@ -123,10 +148,28 @@ SC64Char CBreakoutGame::LoadCharFromFile(const std::string& path)
 void CBreakoutGame::Update()
 {
 	m_dFrametimer += Time::frame;
-	if (m_dFrametimer < 0.01666) return;
+	if (m_dFrametimer < 0.1666) return;
 
 	UpdateBall();
+
+	for (int y = 0; y < LEVEL_HEIGHT; ++y)
+	{
+		for (int x = 0; x < LEVEL_WIDTH; ++x)
+		{
+			SBrick& Brick = m_aBricks[y*LEVEL_WIDTH + x];
+			if (Brick.m_bDirty)
+			{
+				SC64Char CharLeft = Brick.GetChar(false);
+				SC64Char CharRight = Brick.GetChar(true);
+				m_pC64->SetCharacter(x * 2, y, CharLeft);
+				m_pC64->SetCharacter(x * 2 + 1, y, CharRight);
+				Brick.m_bDirty = false;
+			}
+		}
+	}
+
 	m_pC64->Redraw();
+
 	m_dFrametimer = 0;
 
 	iTest++;
@@ -140,30 +183,72 @@ void CBreakoutGame::UpdateBall()
 	for (int it = 0; it < m_nBallVelocity; ++it)
 	{
 		m_vBallPos += m_vBallSpeed;
-		int over = m_vBallPos.y - 24 * 8 - 4;
-		if (over > 0)
+		IntVec m_vBallEnd = m_vBallPos + IntVec(4, 4);
+		if (m_vBallSpeed.x == 1)
 		{
-			m_vBallPos.y -= over;
-			m_vBallSpeed.y *= -1;
+			if (m_vBallEnd.x == 40 * 8 - 1)
+			{
+				m_vBallSpeed.x = -1;
+			}
+			else
+			{
+				auto pBrick = GetBrickAtPixel(m_vBallPos + IntVec(4,1) );
+				if (pBrick && pBrick->m_eMaterial != EM_NONE)
+				{
+					pBrick->Hit();
+					m_vBallSpeed.x = -1;
+				}
+			}
+		}
+		else
+		{
+			if (m_vBallPos.x == 0)
+			{
+				m_vBallSpeed.x = 1;
+			}
+			else
+			{
+				auto pBrick = GetBrickAtPixel(m_vBallPos + IntVec(-1, 2));
+				if (pBrick && pBrick->m_eMaterial != EM_NONE)
+				{
+					pBrick->Hit();
+					m_vBallSpeed.x = 1;
+				}
+			}
 		}
 
-		if (m_vBallPos.y < 0)
+		if (m_vBallSpeed.y == 1)
 		{
-			m_vBallPos.y -= m_vBallPos.y;
-			m_vBallSpeed.y *= -1;
+			//itt kell majd a lezuhanast megoldani
+			if (m_vBallEnd.y == 25 * 8 - 1)
+			{
+				m_vBallSpeed.y = -1;
+			}
+			else
+			{
+				auto pBrick = GetBrickAtPixel(m_vBallPos + IntVec(2, 4));
+				if (pBrick && pBrick->m_eMaterial != EM_NONE)
+				{
+					pBrick->Hit();
+					m_vBallSpeed.y = -1;
+				}
+			}
 		}
-
-		over = m_vBallPos.x - 39 * 8 - 4;
-		if (over > 0)
+		else
 		{
-			m_vBallPos.x -= over;
-			m_vBallSpeed.x *= -1;
-		}
-
-		if (m_vBallPos.x < 0)
-		{
-			m_vBallPos.x -= m_vBallPos.x;
-			m_vBallSpeed.x *= -1;
+			if (m_vBallPos.y == 0)
+			{
+				m_vBallSpeed.y = 1;
+			}
+			else
+			{
+				auto pBrick = GetBrickAtPixel(m_vBallPos + IntVec(1, -1));
+				if (pBrick && pBrick->m_eMaterial != EM_NONE)
+				{
+					pBrick->Hit();
+					m_vBallSpeed.y = 1;
+				}
+			}
 		}
 	}
 	
@@ -184,6 +269,8 @@ void CBreakoutGame::UpdateBall()
 			if (x == 3 && y == 0) continue;
 			if (x == 3 && y == 3) continue;
 			m_pC64->SetPixel(m_vBallPos.x + x, m_vBallPos.y + y, true);
+			m_pC64->SetPixelColor(m_vBallPos.x + x, m_vBallPos.y + y, EC64Color::black, EC64Color::yellow);
+			
 		}
 	}
 	
@@ -192,7 +279,7 @@ void CBreakoutGame::UpdateBall()
 
 void CBreakoutGame::WriteText(const std::string & str, int x, int y)
 {
-	for (int i = 0; i < str.size(); ++i)
+	for (unsigned int i = 0; i < str.size(); ++i)
 	{
 		if (x + i > 39) return;
 		SC64Char Char = m_pC64->GetCharacter(x + i, y);
