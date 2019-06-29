@@ -11,7 +11,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SWindowParams Params;
 	Params.nWidth = 960;
 	Params.nHeight = 600;
-	Params.sTitle = "C64 display";
+	Params.sTitle = "Strategy Breakout";
 	Params.bResizeAble = false;
 	Params.bMaximized = false;
 	//Params.bFullscreen = true;
