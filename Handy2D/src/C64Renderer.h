@@ -27,6 +27,8 @@ struct SC64Char
 {
 	EC64Color cBG = EC64Color::black, cFG = EC64Color::yellow;
 	bool aPixels[8 * 8];
+	bool bDirty = true;
+
 	SC64Char()
 	{
 		for (int i = 0; i < 8 * 8; ++i) aPixels[i] = false;

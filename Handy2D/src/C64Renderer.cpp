@@ -64,6 +64,7 @@ SC64Char CC64RenderLayer::GetCharacter(int x, int y) const
 void CC64RenderLayer::SetCharacter(int x, int y, const SC64Char & Char)
 {
 	m_aChars[x + y * 40] = Char;
+	m_aChars[x + y * 40].bDirty = true;
 	m_bDirty = true;
 
 	DrawCharacter(x, y);
@@ -74,6 +75,7 @@ void CC64RenderLayer::SetPixel(int x, int y, bool bOn)
 	int bigx = x / 8;
 	int bigy = y / 8;
 	m_aChars[bigx + bigy * 40].aPixels[(y - bigy*8) * 8 + x - bigx*8] = bOn;
+	m_aChars[bigx + bigy * 40].bDirty = true;
 	m_bDirty = true;
 }
 
@@ -92,6 +94,7 @@ void CC64RenderLayer::Redraw()
 void CC64RenderLayer::DrawCharacter(int x, int y)
 {
 	SC64Char& Char = m_aChars[x + y * 40];
+	if (!Char.bDirty) return;
 	for (char i = 0; i < 8; ++i)
 	{
 		for (char j = 0; j < 8; ++j)
@@ -99,6 +102,7 @@ void CC64RenderLayer::DrawCharacter(int x, int y)
 			m_Painted.Set(x * 8 + i, y * 8 + j, g_C64Colors[(int)(Char.aPixels[i + j * 8] ? Char.cFG : Char.cBG)]);
 		}
 	}
+	Char.bDirty = false;
 }
 
 void CC64RenderLayer::Render()
