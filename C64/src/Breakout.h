@@ -14,6 +14,20 @@ enum EMaterial
 };
 
 
+
+struct SBall
+{
+	EMaterial m_eMaterial;
+	int m_nHp, m_nMapHp;
+
+	IntVec m_vPos, m_vSpeed;
+	int m_nVelocity;
+	int m_nDamage;
+
+	void Bounce();
+};
+
+
 struct SBrick
 {
 	EMaterial m_eMaterial;
@@ -22,9 +36,20 @@ struct SBrick
 
 	SC64Char GetChar(bool bRight);
 	void SetMaterial(EMaterial mat);
-	void Hit();
+	void Hit(SBall& Ball);
 };
 
+
+struct SBat
+{
+	EMaterial m_eMaterial;
+	int m_nHp, m_nMapHp;
+
+	int m_nPos;
+	int m_nWidth;
+
+	void Bounce(SBall& Ball);
+};
 
 class CBreakoutGame : public CGameLogic
 {
@@ -38,6 +63,7 @@ public:
 	SC64Char LoadCharFromFile(const std::string& path);
 	void LoadChars();
 	void InitLevel();
+	void SetCharacter(int x, int y, int nChar, EC64Color cBG, EC64Color cFG);
 
 	virtual void Update() override;
 
@@ -46,11 +72,10 @@ public:
 
 	CC64RenderLayer* m_pC64;
 
-
-	IntVec m_vBallPos, m_vBallSpeed;
-	int m_nBallVelocity;
-
 	std::vector<SBrick> m_aBricks;
+	SBall m_Ball;
+	SBat m_Bat;
 
 	void UpdateBall();
+	void UpdateBat();
 };

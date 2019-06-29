@@ -74,8 +74,10 @@ void CC64RenderLayer::SetPixel(int x, int y, bool bOn)
 {
 	int bigx = x / 8;
 	int bigy = y / 8;
-	m_aChars[bigx + bigy * 40].aPixels[(y - bigy*8) * 8 + x - bigx*8] = bOn;
-	m_aChars[bigx + bigy * 40].bDirty = true;
+	int iIndex = bigx + bigy * 40;
+	if (iIndex < 0 || iIndex >= 40 * 25) return;
+	m_aChars[iIndex].aPixels[(y - bigy*8) * 8 + x - bigx*8] = bOn;
+	m_aChars[iIndex].bDirty = true;
 	m_bDirty = true;
 }
 
@@ -84,8 +86,10 @@ void CC64RenderLayer::SetPixelColor(int x, int y, EC64Color cBG, EC64Color cFG)
 {
 	int bigx = x / 8;
 	int bigy = y / 8;
-	m_aChars[bigx + bigy * 40].cBG = cBG;
-	m_aChars[bigx + bigy * 40].cFG = cFG;
+	int iIndex = bigx + bigy * 40;
+	if (iIndex < 0 || iIndex >= 40 * 25) return;
+	m_aChars[iIndex].cBG = cBG;
+	m_aChars[iIndex].cFG = cFG;
 }
 
 void CC64RenderLayer::Redraw()
