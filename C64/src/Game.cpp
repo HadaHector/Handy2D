@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "Input.h"
 #include "Breakout.h"
+#include "Audio.h"
 
 extern std::vector<SC64Char> g_aLoadedChars;
 
@@ -22,6 +23,20 @@ std::pair<EC64Color, EC64Color> GetMaterialColor(EMaterial mat)
 	}
 }
 
+std::string GetMaterialName(EMaterial mat)
+{
+	switch (mat)
+	{//sotet - vilagos
+	case EM_WOOD: return "wood";
+	case EM_STONE: return "stone";
+	case EM_STEEL: return "steel";
+	case EM_FIRE: return "ruby";
+	case EM_GOLD: return "gold";
+	case EM_EMERALD: return "emerald";
+	}
+	return "";
+}
+
 //BALL
 
 void SBall::Bounce()
@@ -30,7 +45,8 @@ void SBall::Bounce()
 	if (m_nHp == 0)
 	{
 		m_nVelocity = 0;
-		m_eMaterial = EM_NONE;
+		m_bVisible = false;
+		CAudio::PlaySound(CSound::GetSound("resources/destroy.wav"));
 	}
 	m_nBounceCount++;
 	if (m_nBounceCount > 20)
@@ -38,11 +54,15 @@ void SBall::Bounce()
 		m_nVelocity = std::min(5, m_nVelocity + 1);
 		m_nBounceCount = 0;
 	}
+
+	CAudio::PlaySound(CSound::GetSound("resources/bounce.wav"));
 }
 
 void SBall::SetMaterial(EMaterial eMat)
 {
 	m_eMaterial = eMat;
+	m_nVelocity = 1;
+	m_nPrice = 5;
 	switch (eMat)
 	{
 	case EM_WOOD:
@@ -54,29 +74,34 @@ void SBall::SetMaterial(EMaterial eMat)
 		m_nHp = 100;
 		m_nDamage = 2;
 		m_nMaxSpd = 5;
+		m_nPrice = 10;
 		break;
 	case EM_STEEL:
 		m_nHp = 150;
 		m_nDamage = 3;
 		m_nMaxSpd = 6;
+		m_nPrice = 10;
 		break;
 	case EM_FIRE:
 		m_nHp = 50;
 		m_nDamage = 10;
 		m_nMaxSpd = 7;
 		m_nVelocity = 3;
+		m_nPrice = 15;
 		break;
 	case EM_GOLD:
 		m_nHp = 1000;
 		m_nDamage = 6;
 		m_nMaxSpd = 6;
 		m_nVelocity = 1;
+		m_nPrice = 15;
 		break;
 	case EM_EMERALD:
 		m_nHp = 300;
 		m_nDamage = 8;
 		m_nMaxSpd = 7;
 		m_nVelocity = 2;
+		m_nPrice = 10;
 		break;
 	}
 	m_nMapHp = m_nHp;
@@ -91,18 +116,23 @@ void SBat::SetMaterial(EMaterial eMat)
 	{
 	case EM_WOOD:
 		m_nHp = 50;
+		m_nPrice = 10;
 		break;
 	case EM_STONE:
 		m_nHp = 100;
+		m_nPrice = 10;
 		break;
 	case EM_STEEL:
 		m_nHp = 150;
+		m_nPrice = 15;
 		break;
 	case EM_GOLD:
 		m_nHp = 300;
+		m_nPrice = 15;
 		break;
 	case EM_EMERALD:
 		m_nHp = 1000;
+		m_nPrice = 20;
 		break;
 	}
 
@@ -115,6 +145,9 @@ SC64Char SBrick::GetChar(bool bRight)
 {
 	SC64Char Char;
 	int iChar = -1;
+
+	bool bInvisible = false;
+
 	switch (m_eMaterial)
 	{
 	case EM_WOOD:
@@ -136,7 +169,12 @@ SC64Char SBrick::GetChar(bool bRight)
 		}
 		break;
 	case EM_FIRE:
-		iChar = BRICK_4_LEFT; break;
+		iChar = BRICK_1_LEFT;
+		if (m_nHp == 2)
+		{
+			bInvisible = true;
+		}
+		break;
 	case EM_GOLD:
 		switch (m_nHp)
 		{
@@ -169,6 +207,12 @@ SC64Char SBrick::GetChar(bool bRight)
 	auto Pair = GetMaterialColor(m_eMaterial);
 	Char.cBG = Pair.first;
 	Char.cFG = Pair.second;
+
+	if (bInvisible)
+	{
+		Char.cBG = Char.cFG = EC64Color::black;
+	}
+
 	return Char;
 }
 
@@ -181,7 +225,7 @@ void SBrick::SetMaterial(EMaterial mat)
 	case EM_WOOD: m_nHp = 1; break;
 	case EM_STONE: m_nHp = 2; break;
 	case EM_STEEL: m_nHp = 3; break;
-	case EM_FIRE: m_nHp = 1; break;
+	case EM_FIRE: m_nHp = 2; break;
 	case EM_GOLD: m_nHp = 4; break;
 	case EM_EMERALD: m_nHp = 8; break;
 	}
@@ -203,7 +247,6 @@ void CGame::Activate()
 	CBreakoutGame* pGame = CBreakoutGame::GetInstance();
 	pGame->ClearScreen(EC64Color::black, EC64Color::white);
 
-	InitLevel();
 	StartLevel();
 }
 
@@ -217,13 +260,50 @@ void CGame::HitBrick(SBrick& Brick)
 {
 	if (Brick.m_nHp > 0)
 	{
-		Brick.m_nHp = std::max(0, Brick.m_nHp - m_Ball.m_nDamage);
+		if (Brick.m_eMaterial == EM_FIRE && Brick.m_nHp == 2)
+		{
+			Brick.m_nHp--; //a megjelenites mindig 1
+		}
+		else
+		{
+			Brick.m_nHp = std::max(0, Brick.m_nHp - m_Ball.m_nDamage);
+		}
 	}
 
 	if (Brick.m_nHp == 0)
 	{
 		m_aCollectedMaterials[Brick.m_eMaterial]++;
 		Brick.m_eMaterial = EM_NONE;
+		
+		//nezzuk meg nyertunk-e
+		bool bWin = true;
+		for (unsigned int i = 0; i < m_aBricks.size(); ++i)
+		{
+			if (m_aBricks[i].m_eMaterial != EM_NONE)
+			{
+				bWin = false;
+				break;
+			}
+		}
+		if (bWin)
+		{
+			auto pGame = CBreakoutGame::GetInstance();
+			pGame->WriteText("level completed!", 12, 12, EC64Color::black, EC64Color::white);
+			CAudio::PlaySound(CSound::GetSound("resources/win.wav"));
+
+			SGameSave& Save = pGame->GetSave();
+			for (int i = 0; i < 6; ++i)
+			{
+				Save.m_aMaterials[i] = m_aCollectedMaterials[EM_WOOD + i];
+				Save.m_aBalls[i] = m_aBalls[EM_WOOD + i];
+				Save.m_aBats[i] = m_aBats[EM_WOOD + i];
+			}
+			Save.m_nHighestLevel = std::max((int) Save.m_nHighestLevel, pGame->m_nLevel);
+			pGame->Save();
+
+			m_bGameOver = true;
+
+		}
 	}
 
 	Brick.m_bDirty = true;
@@ -234,12 +314,17 @@ void CGame::HitBrick(SBrick& Brick)
 void CGame::InitLevel()
 {
 	m_aBricks.clear();
+	
+	CBreakoutGame* pGame = CBreakoutGame::GetInstance();
+
+	CLevel Level = pGame->m_aLevels[pGame->m_nLevel];
+
 	for (int y = 0; y < LEVEL_HEIGHT; ++y)
 	{
 		for (int x = 0; x < LEVEL_WIDTH; ++x)
 		{
 			SBrick Brick;
-			Brick.SetMaterial((x + y) % 2 ? EM_NONE : ((x + y) % 4 ? EM_STONE : EM_WOOD));
+			Brick.SetMaterial((EMaterial) Level.m_aBricks[y*LEVEL_WIDTH+x]);
 			m_aBricks.push_back(Brick);
 		}
 	}
@@ -265,7 +350,6 @@ void CGame::InitLevel()
 		GetRenderer()->SetCharacter(x, 0, Char);
 	}
 
-	auto pGame = CBreakoutGame::GetInstance();
 	pGame->SetCharacter(2, 0, UI_BALL_LEFT, EC64Color::darkgrey, EC64Color::white);
 	pGame->SetCharacter(3, 0, UI_BALL_RIGHT, EC64Color::darkgrey, EC64Color::white);
 	pGame->SetCharacter(11, 0, UI_BAT_LEFT, EC64Color::darkgrey, EC64Color::white);
@@ -280,8 +364,40 @@ void CGame::StartLevel()
 
 	GetRenderer()->Redraw();
 
-	m_Ball.SetMaterial(EM_WOOD);
-	m_Bat.SetMaterial(EM_WOOD);
+	auto pGame = CBreakoutGame::GetInstance();
+	SGameSave& Save = pGame->GetSave();
+
+	int nBallType = -1;
+	int nBatType = -1;
+	for (int i = 0; i < 6; ++i)
+	{
+		m_aCollectedMaterials[EM_WOOD + i] = Save.m_aMaterials[i];
+		m_aBalls[EM_WOOD + i] = Save.m_aBalls[i];
+		m_aBats[EM_WOOD + i] = Save.m_aBats[i];
+		if (nBallType == -1 && Save.m_aBalls[i] > 0)
+		{
+			nBallType = i;
+		}
+		if (nBatType == -1 && Save.m_aBats[i] > 0)
+		{
+			nBatType = i;
+		}
+	}
+
+	//adunk egy freet, hogy minden fele keppen lehessen jatszani
+	if (nBallType == -1)
+	{
+		m_aBalls[EM_WOOD]++;
+	}
+	if (nBatType == -1)
+	{
+		m_aBats[EM_WOOD]++;
+	}
+
+	m_Ball.SetMaterial(EM_NONE);
+	m_Bat.SetMaterial(EM_NONE);
+	NextBallMaterial();
+	NextBatMaterial();
 
 	m_Bat.m_nPos = 19 * 8;
 	m_Bat.m_nWidth = 32;
@@ -290,6 +406,10 @@ void CGame::StartLevel()
 	m_bTempBall = true;
 	m_bTempBat = true;
 	m_dRespawnTime = -1;
+	m_bGameOver = false;
+
+
+
 }
 
 SBrick* CGame::GetBrickAtPixel(IntVec pos)
@@ -317,6 +437,26 @@ void CGame::Update()
 		NextBatMaterial();
 	}
 
+	if (m_bGameOver && Input::GetKey(KEY_SPACE).pressed)
+	{
+		CBreakoutGame::GetInstance()->SwitchState(Shop);
+		return;
+	}
+
+	if (Input::GetKey(KEY_ESCAPE).pressed)
+	{
+		auto pGame = CBreakoutGame::GetInstance();
+		SGameSave& Save = pGame->GetSave();
+		for (int i = 0; i < 6; ++i)
+		{
+			Save.m_aMaterials[i] = m_aCollectedMaterials[EM_WOOD + i];
+			Save.m_aBalls[i] = m_aBalls[EM_WOOD + i];
+			Save.m_aBats[i] = m_aBats[EM_WOOD + i];
+		}
+		pGame->Save();
+		CBreakoutGame::GetInstance()->SwitchState(Shop);
+		return;
+	}
 
 	m_dFrametimer += Time::frame;
 	if (m_dFrametimer < 0.01666) return;
@@ -331,11 +471,13 @@ void CGame::Update()
 		{
 			if (m_aBalls[(EMaterial)i] > 0)
 			{
-				m_dRespawnTime = Time::full + 1;
+				m_dRespawnTime = Time::full + 0.75;
 				bOk = true;
 				break;
 			}
 		}
+
+		if (!m_Bat.m_bVisible) bOk = false;
 
 		if (bOk)
 		{
@@ -347,7 +489,21 @@ void CGame::Update()
 		else
 		{
 			//GAME OVER
-			CBreakoutGame::GetInstance()->WriteText("game over", 15, 12, EC64Color::black, EC64Color::white);
+			auto pGame = CBreakoutGame::GetInstance();
+			pGame->WriteText("game over", 15, 12, EC64Color::black, EC64Color::white);
+			CAudio::PlaySound(CSound::GetSound("resources/loose.wav"));
+
+			SGameSave& Save = pGame->GetSave();
+			for (int i = 0; i < 6; ++i)
+			{
+				Save.m_aMaterials[i] = m_aCollectedMaterials[EM_WOOD + i];
+				Save.m_aBalls[i] = m_aBalls[EM_WOOD + i];
+				Save.m_aBats[i] = m_aBats[EM_WOOD+i];
+			}
+			pGame->Save();
+			
+			m_bGameOver = true;
+			
 		}
 	}
 
@@ -369,6 +525,7 @@ void CGame::Update()
 		if (m_bTempBat)
 		{
 			m_aBats[m_Bat.m_eMaterial] --;
+			m_Bat.SetMaterial(m_Bat.m_eMaterial);
 			m_bTempBat = false;
 		}
 		else if (m_bTempBall)
@@ -422,14 +579,14 @@ void CGame::Update()
 	CBreakoutGame::GetInstance()->DrawHpBar(13, (float)m_Bat.m_nHp / m_Bat.m_nMapHp, Pair.first, Pair.second);
 
 
-	CBreakoutGame::GetInstance()->WriteTopText(1, m_aBalls[m_Ball.m_eMaterial], EC64Color::darkgrey, EC64Color::white);
-	CBreakoutGame::GetInstance()->WriteTopText(10, m_aBats[m_Bat.m_eMaterial], EC64Color::darkgrey, EC64Color::white);
+	CBreakoutGame::GetInstance()->WriteNumber(1, 0, m_aBalls[m_Ball.m_eMaterial], EC64Color::darkgrey, EC64Color::white);
+	CBreakoutGame::GetInstance()->WriteNumber(10, 0, m_aBats[m_Bat.m_eMaterial], EC64Color::darkgrey, EC64Color::white);
 
 	for (int i = 0; i < 6; ++i)
 	{
 		EMaterial eMat = (EMaterial)(EM_WOOD + i);
 		auto Pair = GetMaterialColor(eMat);
-		CBreakoutGame::GetInstance()->WriteDoubleTopText(20 + 2 * i, m_aCollectedMaterials[eMat], Pair.first, Pair.second);
+		CBreakoutGame::GetInstance()->WriteDoubleNumber(20 + 3 * i, 0, m_aCollectedMaterials[eMat], Pair.first, Pair.second);
 	}
 
 
@@ -452,7 +609,9 @@ void CGame::UpdateBall()
 		{
 			nSpd++;
 		}
-	}
+	}								   
+
+	if (!m_Ball.m_bVisible) nSpd = 0;
 
 	for (int it = 0; it < nSpd; ++it)
 	{
@@ -507,7 +666,7 @@ void CGame::UpdateBall()
 			else
 #endif
 				//bat bounce
-				if (m_vBallEnd.y == 24 * 8 - 1)
+				if (m_Bat.m_bVisible && m_vBallEnd.y == 24 * 8 - 1)
 				{
 					if (m_vBallEnd.x >= m_Bat.m_nPos && m_vBallEnd.x <= m_Bat.m_nPos + m_Bat.m_nWidth)
 					{
@@ -547,10 +706,11 @@ void CGame::UpdateBall()
 		}
 	}
 
-	if (m_Ball.m_vPos.y >= 25 * 8)
+	if (m_Ball.m_vPos.y >= 25 * 8 && m_Ball.m_bVisible)
 	{
 		m_Ball.m_bVisible = false;
 		m_Ball.m_nVelocity = 0;
+		CAudio::PlaySound(CSound::GetSound("resources/destroy.wav"));
 	}
 
 	auto pRenderer = GetRenderer();
@@ -566,6 +726,7 @@ void CGame::UpdateBall()
 	if (m_bTempBall && Time::full * 2 - floor(Time::full * 2) < 0.5f) return;
 	if (m_bTempBall && m_bTempBat) return;
 	if (!m_Ball.m_bVisible) return;
+	if (m_bGameOver) return;
 
 	for (int x = 0; x < 4; ++x)
 	{
@@ -625,6 +786,7 @@ void CGame::UpdateBat()
 	}
 
 	if (m_bTempBat && Time::full * 2 - floor(Time::full * 2) < 0.5f) return;
+	if (!m_Bat.m_bVisible) return;
 
 	for (int x = 0; x < m_Bat.m_nWidth; ++x)
 	{
@@ -648,10 +810,18 @@ void CGame::UpdateBat()
 
 void CGame::BounceOnBat()
 {
-	m_bTempBat = false;
+	if (m_bTempBat)
+	{
+		m_bTempBat = false;
+		m_aBats[m_Bat.m_eMaterial] --;
+		m_Bat.SetMaterial(m_Bat.m_eMaterial);
+	}
+
 	m_Bat.m_nHp -= m_Ball.m_nDamage;
 	if (m_Bat.m_nHp <= 0)
 	{
+		CAudio::PlaySound(CSound::GetSound("resources/destroy.wav"));
+
 		bool bOk = false;
 		for (int i = EM_WOOD; i <= EM_EMERALD; ++i)
 		{

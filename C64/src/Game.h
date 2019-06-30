@@ -16,6 +16,8 @@ enum EMaterial
 };
 
 
+std::pair<EC64Color, EC64Color> GetMaterialColor(EMaterial mat);
+std::string GetMaterialName(EMaterial mat);
 
 struct SBall
 {
@@ -26,6 +28,7 @@ struct SBall
 	int m_nVelocity;
 	int m_nDamage;
 	int m_nMaxSpd;
+	int m_nPrice;
 	bool m_bVisible = true;
 
 	int m_nBounceCount = 0;
@@ -53,6 +56,7 @@ struct SBat
 
 	int m_nPos;
 	int m_nWidth;
+	int m_nPrice;
 
 	void SetMaterial(EMaterial eMat);
 
@@ -94,6 +98,7 @@ public:
 	bool m_bTempBat;
 
 	double m_dRespawnTime;
+	bool m_bGameOver = false;
 
 	void UpdateBall();
 	void UpdateBat();

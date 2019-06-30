@@ -1,6 +1,7 @@
 #include "SDLManager.h"
 #include "Breakout.h"
 #include "Input.h"
+#include "Audio.h"
 
 #include <fstream>
 #include <sstream>
@@ -17,11 +18,28 @@ bool CBreakoutGame::Load()
 	Time::target_fps = 60;
 
 	LoadChars();
+	for (int i = 1; i <= 10; ++i)
+	{
+		CLevel Level;
+		std::string sFile = "resources/level";
+		sFile += std::to_string(i);
+		sFile += ".txt";
+		Level.Load(sFile);
+		m_aLevels.push_back(Level);
+	}
+
+	CAudio::AllocateChannels(64);
+	CSound::LoadSound("resources/bounce.wav");
+	CSound::LoadSound("resources/win.wav");
+	CSound::LoadSound("resources/loose.wav");
+	CSound::LoadSound("resources/buy.wav");
+	CSound::LoadSound("resources/nobuy.wav");
+	CSound::LoadSound("resources/destroy.wav");
 
 	m_pC64 = new CC64RenderLayer(IntRect(0, 0, 960, 600));
 	SDLManager::Instance.AddLayer(m_pC64);
 
-	LoadSave();
+	LoadSaves();
 
 	SwitchState(Title);
 	return true;
@@ -32,6 +50,7 @@ void CBreakoutGame::Update()
 	switch (m_eState)
 	{
 	case Title: m_Title.Update(); break;
+	case Saves: m_SaveScreen.Update(); break;
 	case Shop: m_Shop.Update(); break;
 	case Game: m_Game.Update(); break;
 	}
@@ -43,30 +62,71 @@ void CBreakoutGame::SwitchState(EGameState eState)
 	switch (m_eState)
 	{
 	case Title: m_Title.Activate(); break;
+	case Saves: m_SaveScreen.Activate(); break;
 	case Shop: m_Shop.Activate(); break;
 	case Game: m_Game.Activate(); break;
 	}
 }
 
-
-
-
-void CBreakoutGame::LoadSave()
+void CBreakoutGame::LoadSaves()
 {
-	/*
-	m_aBalls[EM_WOOD] = 3;
-	m_aBalls[EM_STONE] = 1;
-	m_aBalls[EM_STEEL] = 1;
-	m_aBalls[EM_FIRE] = 1;
-	m_aBalls[EM_GOLD] = 1;
-	m_aBalls[EM_EMERALD] = 1;
+	for (int i = 0; i < 3; ++i)
+	{
+		std::string sPath = "saves/save";
+		sPath += std::to_string(i);
+		sPath += ".sav";
 
-	m_aBats[EM_WOOD] = 3;
-	m_aBats[EM_STONE] = 1;
-	m_aBats[EM_STEEL] = 1;
-	m_aBats[EM_GOLD] = 1;
-	m_aBats[EM_EMERALD] = 1;
-	*/
+		SGameSave& Save = m_aSaves[i];
+
+		std::ifstream t(sPath);
+		if (t.is_open())
+		{
+			std::stringstream buffer;
+			buffer << t.rdbuf();
+			buffer.read((char*)&Save.m_nHighestLevel,1);
+
+			for (int x = 0; x < 6; ++x)
+			{
+				buffer.read((char*)&Save.m_aMaterials[x], 4);
+				buffer.read((char*)&Save.m_aBalls[x], 4);
+				buffer.read((char*)&Save.m_aBats[x], 4);
+			}
+		}
+		else
+		{
+			Save.m_nHighestLevel = 1;
+			for (int x = 0; x < 6; ++x)
+			{
+				Save.m_aMaterials[x] = 0;
+				Save.m_aBalls[x] = 0;
+				Save.m_aBats[x] = 0;
+			}
+			Save.m_aBalls[0] = 3;
+			Save.m_aBats[0] = 3;
+		}
+	}
+}
+
+void CBreakoutGame::SaveSlot(int nSlot)
+{
+	std::string sPath = "saves/save";
+	sPath += std::to_string(nSlot);
+	sPath += ".sav";
+
+	SGameSave& Save = m_aSaves[nSlot];
+
+
+	std::ofstream t(sPath);
+	if (t.is_open())
+	{
+		t.write((char*) &Save.m_nHighestLevel, 1);
+		for (int x = 0; x < 6; ++x)
+		{
+			t.write((char*) &Save.m_aMaterials[x], 4);
+			t.write((char*) &Save.m_aBalls[x], 4);
+			t.write((char*) &	Save.m_aBats[x], 4);
+		}
+	}
 }
 
 
@@ -152,7 +212,7 @@ void CBreakoutGame::WriteText(const std::string & str, int x, int y, EC64Color c
 
 
 
-void CBreakoutGame::WriteTopText(int x, int val, EC64Color cBG, EC64Color cFG)
+void CBreakoutGame::WriteNumber(int x, int y, int val, EC64Color cBG, EC64Color cFG)
 {
 	val = std::min(val, 99);
 
@@ -178,10 +238,10 @@ void CBreakoutGame::WriteTopText(int x, int val, EC64Color cBG, EC64Color cFG)
 		}
 	}
 
-	m_pC64->SetCharacter(x, 0, Char);
+	m_pC64->SetCharacter(x, y, Char);
 }
 
-void CBreakoutGame::WriteDoubleTopText(int x, int val, EC64Color cBG, EC64Color cFG)
+void CBreakoutGame::WriteDoubleNumber(int x, int y, int val, EC64Color cBG, EC64Color cFG)
 {
 	val = std::min(val, 99);
 
@@ -205,7 +265,7 @@ void CBreakoutGame::WriteDoubleTopText(int x, int val, EC64Color cBG, EC64Color 
 		}
 	}
 
-	m_pC64->SetCharacter(x+1, 0, Char1);
+	m_pC64->SetCharacter(x+1, y, Char1);
 
 	SC64Char Char2;
 	Char2.cBG = cBG;
@@ -227,7 +287,7 @@ void CBreakoutGame::WriteDoubleTopText(int x, int val, EC64Color cBG, EC64Color 
 		}
 	}
 
-	m_pC64->SetCharacter(x, 0, Char2);
+	m_pC64->SetCharacter(x, y, Char2);
 }
 
 

@@ -4,7 +4,8 @@
 #include "Shop.h"
 #include "Title.h"
 #include "Game.h"
-
+#include "Level.h"
+#include "SaveScreen.h"
 
 #define LEVEL_WIDTH 20
 #define LEVEL_HEIGHT 16
@@ -37,8 +38,17 @@
 enum EGameState
 {
 	Title,
+	Saves,
 	Shop,
 	Game
+};
+
+struct SGameSave
+{
+	char m_nHighestLevel = 1;
+	int m_aMaterials[6];
+	int m_aBalls[6];
+	int m_aBats[6];
 };
 
 
@@ -52,12 +62,14 @@ public:
 	static CBreakoutGame* GetInstance();
 
 	void LoadChars();
-	
-	void LoadSave();
+	void LoadSaves();
+	void SaveSlot(int nSlot);
+	void Save() { SaveSlot(m_nActiveSaveSlot); }
+
 	void SetCharacter(int x, int y, int nChar, EC64Color cBG, EC64Color cFG);
 	void WriteText(const std::string& str, int x, int y, EC64Color cBG, EC64Color cFG);
-	void WriteTopText(int x, int val, EC64Color cBG, EC64Color cFG);
-	void WriteDoubleTopText(int x, int val, EC64Color cBG, EC64Color cFG );
+	void WriteNumber(int x, int y, int val, EC64Color cBG, EC64Color cFG);
+	void WriteDoubleNumber(int x, int y, int val, EC64Color cBG, EC64Color cFG );
 	void DrawHpBar(int nPos, float fValue, EC64Color cBG, EC64Color cFG);
 
 	void ClearScreen(EC64Color cBG, EC64Color cFG);
@@ -66,6 +78,7 @@ public:
 	SC64Char LoadCharFromFile(const std::string& path);
 
 	EGameState m_eState = Title;
+	int m_nLevel = 0;
 	void SwitchState(EGameState eState);
 
 
@@ -75,4 +88,11 @@ public:
 	CTitle m_Title;
 	CShop m_Shop;
 	CGame m_Game;
+	CSaveScreen m_SaveScreen;
+
+	SGameSave m_aSaves[3];
+	int m_nActiveSaveSlot = 0;
+	SGameSave& GetSave() { return m_aSaves[m_nActiveSaveSlot]; }
+
+	std::vector<CLevel> m_aLevels;
 };
