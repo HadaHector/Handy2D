@@ -117,6 +117,11 @@ void SDLManager::SetWindowMaxSize(IntVec size)
 	SDL_SetWindowMaximumSize(Instance.m_pWindow, size.x, size.y);
 }
 
+void SDLManager::SetClearColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+	SDL_SetRenderDrawColor(Instance.m_pRenderer, r, g, b, a);
+}
+
 CGameLogic* SDLManager::GetGameLogic()
 {
 	return Instance.m_pGameLogic;

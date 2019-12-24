@@ -59,6 +59,12 @@ public:
 		y *= f;
 	}
 
+	void operator*=(Vec v)
+	{
+		x *= v.x;
+		y *= v.y;
+	}
+
 	operator SDL_Point() const;
 
 	operator IntVec() const;
