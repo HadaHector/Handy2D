@@ -79,17 +79,19 @@ void CTiledMapRenderer::Render()
 				{
 					Vec vRenderPos = GetTileScreenCoordPixel(IntVec(x * nTilePixels, y * nTilePixels) - m_vCameraPos) + m_Rect.GetSize() / 2;
 					vRenderPos.y -= aTiles[i].m_nHeight;
-					std::shared_ptr<CSprite> pSprite = aTiles[i].m_aSprites[(m_nRotation + aTiles[i].m_nRotation) % (aTiles[i].m_aSprites.size())];
+					std::shared_ptr<CImageSprite> pSprite = aTiles[i].m_aSprites[(m_nRotation + aTiles[i].m_nRotation) % (aTiles[i].m_aSprites.size())];
 					pSprite->Render(*this, vRenderPos);
 
 					IntRect Rect;
 					Rect.SetPos(vRenderPos);
 					Rect.SetSize(pSprite->GetSize());
-					if (Rect.IsInside(Input::GetMousePos()))
+					IntVec vMousePos = Input::GetMousePos();
+					if (Rect.IsInside(vMousePos))
 					{
 						SSpriteBinding Binding;
 						Binding.m_vPos = { x,y };
 						Binding.m_pSprite = pSprite;
+						Binding.m_vClickCoord = vMousePos - vRenderPos;
 						m_aSpritesUnderCursor.push_back(Binding);
 					}
 					
@@ -116,26 +118,58 @@ STileSpriteData& CTiledMapRenderer::GetTileData(IntVec vPos)
 {
 	return m_aTiles[vPos.y * m_vSize.x + vPos.x];
 }
+#include <Windows.h>
 
-void CTiledMapRenderer::UpdateMovement()
+void CTiledMapRenderer::Update()
 {
 	//if (Input::GetKey(MOUSE_RIGHT).pressed)
 	{
 		if (m_vSelectorPos != IntVec(-1, -1))
 		{
-			GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground].pop_back();
+			if (GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground].back().m_sData == "selector")
+			{
+				GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground].pop_back();
+			}			
 		}
+
+		m_vSelectorPos = { -1,-1 };
 
 		if (m_aSpritesUnderCursor.size() > 0)
 		{
-			m_vSelectorPos = m_aSpritesUnderCursor[m_aSpritesUnderCursor.size() - 1].m_vPos;
+			for (int i = m_aSpritesUnderCursor.size() - 1; i >= 0; --i)
+			{
+				bool bOk = false;
 
-			std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
-			pSprite->SetTexture(CTexture::GetTexture("selector"));
-			pSprite->SetSize({ 64,64 });
+				std::shared_ptr<CImageSprite> pSprite = m_aSpritesUnderCursor[i].m_pSprite.lock();
+				if (pSprite && pSprite->GetTexture())
+				{
+					std::shared_ptr<CTexture> pTex = pSprite->GetTexture().m_tex.lock();
+					if (pTex)
+					{
+						Color c = pTex->GetPixel(m_aSpritesUnderCursor[i].m_vClickCoord);
+						if (c.a > 0)
+						{
+							bOk = true;
+						}
+					}
+					
+				}
+				if (bOk)
+				{
+					m_vSelectorPos = m_aSpritesUnderCursor[i].m_vPos;
 
-			int nHeight = GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground][0].m_nHeight;
-			GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground].push_back({ pSprite, nHeight });
+					std::shared_ptr<CImageSprite> pSelectorSprite = std::make_shared<CImageSprite>();
+					pSelectorSprite->SetTexture(CTexture::GetTexture("selector"));
+					pSelectorSprite->SetSize({ 64,64 });
+
+					int nHeight = GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground][0].m_nHeight;
+					SSpriteData Data = { pSelectorSprite, nHeight };
+					Data.m_sData = "selector";
+					GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground].push_back(Data);
+					break;
+				}
+			}
+			
 		}
 		else
 		{
@@ -468,9 +502,10 @@ void CTiledMap::UpdateTerrainSprites(IntVec vPos)
 	case 0b00010100: pTextures = &aOneDownOneUpTex; nRot = 3; break;
 	}
 
+	SpriteData.m_aSprites[STileSpriteData::Ground].clear();
 	if (pTextures)
 	{
-		std::vector<std::shared_ptr<CSprite>> aSprites;
+		std::vector<std::shared_ptr<CImageSprite>> aSprites;
 		for (unsigned int i = 0; i < pTextures->size(); ++i)
 		{
 			std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
@@ -515,7 +550,7 @@ void CTiledMap::UpdateTerrainSprites(IntVec vPos)
 		int nHeight = GetHeight(vNeighbour);
 		for (int j = nHeight; j < Data.m_nHeigth; ++j)
 		{
-			std::vector<std::shared_ptr<CSprite>> aSprites;
+			std::vector<std::shared_ptr<CImageSprite>> aSprites;
 			for (int k = 0; k < 4; ++k)
 			{
 				std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
@@ -526,6 +561,24 @@ void CTiledMap::UpdateTerrainSprites(IntVec vPos)
 			SpriteData.m_aSprites[STileSpriteData::Cliff0 + i].push_back({
 				aSprites, j * 16, 0
 			});
+		}
+	}
+}
+
+void CTiledMap::Update()
+{
+	m_Renderer.Update();
+
+	if (Input::GetKey(MOUSE_LEFT).pressed)
+	{
+		if (m_Renderer.GetSelectorPos() != IntVec(-1, -1))
+		{
+			GetTileData(m_Renderer.GetSelectorPos()).m_nHeigth++;
+			for (int i = 0; i < 4; ++i)
+			{
+				GetTileData(m_Renderer.GetSelectorPos()).m_aHeights[i]++;
+			}
+			UpdateTerrainSprites(m_Renderer.GetSelectorPos());			
 		}
 	}
 }

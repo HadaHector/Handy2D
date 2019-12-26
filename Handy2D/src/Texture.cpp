@@ -30,6 +30,19 @@ SDL_Surface* CTexture::GetSurface()
 	return m_pSurface;
 }
 
+Color CTexture::GetPixel(IntVec vCoord)
+{
+	if (!m_pSurface)
+	{
+		return Color();
+	}
+	unsigned char r = ((unsigned char*)m_pSurface->pixels)[4*(vCoord.y*m_pSurface->w + vCoord.x)];
+	unsigned char g = ((unsigned char*)m_pSurface->pixels)[4*(vCoord.y*m_pSurface->w + vCoord.x)+1];
+	unsigned char b = ((unsigned char*)m_pSurface->pixels)[4*(vCoord.y*m_pSurface->w + vCoord.x)+2];
+	unsigned char a = ((unsigned char*)m_pSurface->pixels)[4*(vCoord.y*m_pSurface->w + vCoord.x)+3];
+	return Color(r, g, b, a);
+}
+
 void CTexture::Load(bool bKeepSurface)
 {
 	m_pSurface = IMG_Load(m_sFilePath.c_str());

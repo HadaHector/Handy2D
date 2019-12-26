@@ -57,6 +57,11 @@ void CImageSprite::SetTexture(STextureRef pTexture)
 	m_pTexture = pTexture;
 }
 
+STextureRef CImageSprite::GetTexture()
+{
+	return m_pTexture;
+}
+
 //CAnimSprite
 
 CAnimSprite::~CAnimSprite() { SDLManager::spritenum--; }

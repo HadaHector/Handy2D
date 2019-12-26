@@ -3,24 +3,26 @@
 #include <array>
 
 
+
 struct SSpriteData
 {
 	SSpriteData() = default;
-	SSpriteData(std::shared_ptr<CSprite> pSprite, int nHeight = 0, int nRotation = 0)
+	SSpriteData(std::shared_ptr<CImageSprite> pSprite, int nHeight = 0, int nRotation = 0)
 	{
 		m_aSprites.push_back(pSprite);
 		m_nHeight = nHeight;
 		m_nRotation = nRotation;
 	}
-	SSpriteData(std::vector<std::shared_ptr<CSprite>> aSprites, int nHeight = 0, int nRotation = 0)
+	SSpriteData(std::vector<std::shared_ptr<CImageSprite>> aSprites, int nHeight = 0, int nRotation = 0)
 	{
 		m_aSprites = aSprites;
 		m_nHeight = nHeight;
 		m_nRotation = nRotation;
 	}
-	std::vector<std::shared_ptr<CSprite>> m_aSprites;
+	std::vector<std::shared_ptr<CImageSprite>> m_aSprites;
 	int m_nHeight;
 	int m_nRotation;
+	std::string m_sData;
 };
 
 struct STileSpriteData
@@ -66,7 +68,9 @@ public:
 	void AddSprite(IntVec vTile, STileSpriteData::ETileSpriteSlot eSlot, SSpriteData);
 	STileSpriteData& GetTileData(IntVec vPos);
 
-	void UpdateMovement();
+	IntVec GetSelectorPos() const { return m_vSelectorPos; }
+
+	void Update();
 private:
 
 	IntVec m_vCameraPos;
@@ -79,7 +83,8 @@ private:
 	struct SSpriteBinding
 	{
 		IntVec m_vPos;
-		std::weak_ptr<CSprite> m_pSprite;
+		IntVec m_vClickCoord;
+		std::weak_ptr<CImageSprite> m_pSprite;
 	};
 	std::vector<SSpriteBinding> m_aSpritesUnderCursor;
 	IntVec m_vSelectorPos = { -1,-1 };
@@ -107,6 +112,7 @@ public:
 
 	void InitTestMap();
 	void UpdateTerrainSprites(IntVec vPos);
+	void Update();
 
 private:
 	IntVec m_vSize;

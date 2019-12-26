@@ -46,6 +46,7 @@ public:
 	virtual void Render(const CRenderLayer& Layer, Vec vOffset = Vec());
 
 	virtual void SetTexture(STextureRef pTexture);
+	virtual STextureRef GetTexture();
 
 protected:
 	STextureRef m_pTexture;

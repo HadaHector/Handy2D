@@ -37,11 +37,9 @@ bool CSplashGame::Load()
 
 	SDLManager::SetClearColor(0, 0, 0, 1);
 	
-	CTexture::LoadTexture("resources/test_tile.png", "tile");
-	CTexture::LoadTexture("resources/test_tile2.png", "tile2");
-	CTexture::LoadTexture("resources/tree.png", "tree");
-	CTexture::LoadTexture("resources/wall_left.png", "wall_left");
-	CTexture::LoadTexture("resources/wall_right.png","wall_right");
+	CTexture::LoadTexture("resources/tree.png", "tree", true);
+	CTexture::LoadTexture("resources/wall_left.png", "wall_left", true);
+	CTexture::LoadTexture("resources/wall_right.png","wall_right", true);
 	CTexture::LoadTexture("resources/box0.png", "box0");
 	CTexture::LoadTexture("resources/box1.png", "box1");
 	CTexture::LoadTexture("resources/box2.png", "box2");
@@ -51,7 +49,7 @@ bool CSplashGame::Load()
 	CTexture::LoadTexture("resources/fence2.png", "fence2");
 	CTexture::LoadTexture("resources/fence3.png", "fence3");
 
-	CTexture::LoadTexture("resources/selector.png", "selector");
+	CTexture::LoadTexture("resources/selector.png", "selector", true);
 
 	CTexture::LoadTexture("resources/tiles/0001.png", "tiles/0001", true);
 	CTexture::LoadTexture("resources/tiles/0002.png", "tiles/0002", true);
@@ -114,7 +112,7 @@ void CSplashGame::Update()
 		Resize();
 	}
 
-	m_pTiledMap->m_Renderer.UpdateMovement();
+	m_pTiledMap->Update();
 
 	UpdateGui();
 	//pFPS->SetText("fps:" + std::to_string(Time::fps) + " sprites:" + std::to_string(SDLManager::drawnum));

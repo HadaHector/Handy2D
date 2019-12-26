@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include <memory>
 #include <functional>
+#include "Color.h"
 
 struct SDL_Texture;
 struct SDL_Surface;
@@ -38,6 +39,7 @@ public:
 
 	SDL_Texture* GetTexture();
 	SDL_Surface* GetSurface();
+	Color GetPixel(IntVec vCoord);
 	size_t GetHash() const { return m_hash; }
 	IntVec GetSize() const { return m_Size; }
 	
