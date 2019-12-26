@@ -39,7 +39,9 @@ bool CSplashGame::Load()
 	
 	CTexture::LoadTexture("resources/test_tile.png", "tile");
 	CTexture::LoadTexture("resources/test_tile2.png", "tile2");
-	CTexture::LoadTexture("resources/tree.png","tree");
+	CTexture::LoadTexture("resources/tree.png", "tree");
+	CTexture::LoadTexture("resources/wall_left.png", "wall_left");
+	CTexture::LoadTexture("resources/wall_right.png","wall_right");
 	CTexture::LoadTexture("resources/box0.png", "box0");
 	CTexture::LoadTexture("resources/box1.png", "box1");
 	CTexture::LoadTexture("resources/box2.png", "box2");
@@ -50,58 +52,11 @@ bool CSplashGame::Load()
 	CTexture::LoadTexture("resources/fence3.png", "fence3");
 	root = std::make_shared<CGameObject>();
 
-	m_pTiledMap = new CTiledMap(IntRect(0, 0, 1024, 512));
-	SDLManager::Instance.AddLayer(m_pTiledMap);
-	m_pTiledMap->SetCamera({ 0,0 }, 0);
+	m_pTiledMap = new CTiledMap();
+	SDLManager::Instance.AddLayer(&m_pTiledMap->m_Renderer);
+	m_pTiledMap->m_Renderer.SetCamera({ 0,0 }, 0);
 
-	IntVec vMapSize = { 40,40 };
-
-	m_pTiledMap->SetSize(vMapSize);
-	for (int y = 0; y < vMapSize.y; ++y)
-	{
-		for (int x = 0; x < vMapSize.x; ++x)
-		{
-			int nHeight = 0; // random_4(e1) == 0 ? 1 : 0;
-
-			std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
-			pSprite->SetTexture(CTexture::GetTexture( x%4==0 ? "tile2" : "tile"));
-			pSprite->SetSize({ 64,32 });
-			m_pTiledMap->AddSprite({ x,y }, STileData::Ground, { pSprite, nHeight * 16 });
-			if (random_4(e1) == 0)
-			{
-				std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
-				pSprite->SetTexture(CTexture::GetTexture("tree"));
-				pSprite->SetSize({ 64,64 });
-				m_pTiledMap->AddSprite({ x,y }, STileData::Object, { pSprite, 32 + nHeight * 16, random_4(e1) });
-			}
-			else if (random_4(e1) == 0)
-			{
-				std::vector<std::shared_ptr<CSprite>> aSprites;
-				for (int i = 0; i < 4; ++i)
-				{
-					std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
-					pSprite->SetTexture(CTexture::GetTexture(std::string("box") + std::to_string(i)));
-					pSprite->SetSize({ 64,64 });
-					aSprites.push_back(pSprite);
-				}
-				m_pTiledMap->AddSprite({ x,y }, STileData::Object, { aSprites, 32 + nHeight * 16, random_4(e1) });
-			}
-
-			if (random_4(e1) == 0)
-			{
-				std::vector<std::shared_ptr<CSprite>> aSprites;
-				for (int i = 0; i < 4; ++i)
-				{
-					std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
-					pSprite->SetTexture(CTexture::GetTexture(std::string("fence") + std::to_string(i)));
-					pSprite->SetSize({ 64,48 });
-					aSprites.push_back(pSprite);
-				}
-				int nSide = random_4(e1);
-				m_pTiledMap->AddSprite({ x,y }, (STileData::ETileSpriteSlot) ((int)STileData::Side0 + nSide), { aSprites, 16, nSide });
-			}
-		}
-	}
+	m_pTiledMap->InitTestMap();
 
 	pGui = new CGuiLayer(IntRect(0, 0, 1024, 512));
 	SDLManager::Instance.AddLayer(pGui);
@@ -114,7 +69,7 @@ void CSplashGame::Resize()
 {
 	IntVec vWinSize = SDLManager::GetSize();
 	pGui->SetRect(IntRect(0, 0, vWinSize.x, vWinSize.y));
-	m_pTiledMap->SetRect(IntRect(0, 0, vWinSize.x, vWinSize.y));
+	m_pTiledMap->m_Renderer.SetRect(IntRect(0, 0, vWinSize.x, vWinSize.y));
 	//pMenuBg->SetSize(vWinSize);
 	m_bResized = false;
 }
@@ -128,7 +83,7 @@ void CSplashGame::Update()
 		Resize();
 	}
 
-	m_pTiledMap->UpdateMovement();
+	m_pTiledMap->m_Renderer.UpdateMovement();
 
 	UpdateGui();
 	//pFPS->SetText("fps:" + std::to_string(Time::fps) + " sprites:" + std::to_string(SDLManager::drawnum));

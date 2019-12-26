@@ -5,23 +5,23 @@
 
 namespace
 {
-	std::vector<STileData::ETileSpriteSlot> g_aSlotRenderOrder[4] =
+	std::vector<STileSpriteData::ETileSpriteSlot> g_aSlotRenderOrder[4] =
 	{
-		{ STileData::Ground, STileData::Side3, STileData::Side0, STileData::SmallObject0, STileData::SmallObject3, STileData::Object, STileData::SmallObject1, STileData::SmallObject2, STileData::Side2, STileData::Side1 },
-		{ STileData::Ground, STileData::Side2, STileData::Side3, STileData::SmallObject1, STileData::SmallObject0, STileData::Object, STileData::SmallObject2, STileData::SmallObject3, STileData::Side1, STileData::Side0 },
-		{ STileData::Ground, STileData::Side1, STileData::Side2, STileData::SmallObject2, STileData::SmallObject1, STileData::Object, STileData::SmallObject3, STileData::SmallObject0, STileData::Side0, STileData::Side3 },
-		{ STileData::Ground, STileData::Side0, STileData::Side1, STileData::SmallObject3, STileData::SmallObject2, STileData::Object, STileData::SmallObject0, STileData::SmallObject1, STileData::Side3, STileData::Side2 }
+		{ STileSpriteData::Cliff2, STileSpriteData::Cliff1, STileSpriteData::Ground, STileSpriteData::Side3, STileSpriteData::Side0, STileSpriteData::SmallObject0, STileSpriteData::SmallObject3, STileSpriteData::Object, STileSpriteData::SmallObject1, STileSpriteData::SmallObject2, STileSpriteData::Side2, STileSpriteData::Side1 },
+		{ STileSpriteData::Cliff1, STileSpriteData::Cliff0, STileSpriteData::Ground, STileSpriteData::Side2, STileSpriteData::Side3, STileSpriteData::SmallObject1, STileSpriteData::SmallObject0, STileSpriteData::Object, STileSpriteData::SmallObject2, STileSpriteData::SmallObject3, STileSpriteData::Side1, STileSpriteData::Side0 },
+		{ STileSpriteData::Cliff0, STileSpriteData::Cliff3, STileSpriteData::Ground, STileSpriteData::Side1, STileSpriteData::Side2, STileSpriteData::SmallObject2, STileSpriteData::SmallObject1, STileSpriteData::Object, STileSpriteData::SmallObject3, STileSpriteData::SmallObject0, STileSpriteData::Side0, STileSpriteData::Side3 },
+		{ STileSpriteData::Cliff3, STileSpriteData::Cliff2, STileSpriteData::Ground, STileSpriteData::Side0, STileSpriteData::Side1, STileSpriteData::SmallObject3, STileSpriteData::SmallObject2, STileSpriteData::Object, STileSpriteData::SmallObject0, STileSpriteData::SmallObject1, STileSpriteData::Side3, STileSpriteData::Side2 }
 	};
 }
 
 
-void CTiledMap::SetSize(IntVec vSize)
+void CTiledMapRenderer::SetSize(IntVec vSize)
 {
 	m_vSize = vSize;
 	m_aTiles.resize(vSize.x * vSize.y);
 }
 
-void CTiledMap::Render()
+void CTiledMapRenderer::Render()
 {
 	if (!m_bVisible) return;
 	
@@ -68,7 +68,7 @@ void CTiledMap::Render()
 	{
 		for (int x = nFromX; x != nToX; x += nIncX)
 		{
-			STileData& Tile = m_aTiles[y*m_vSize.x + x];
+			STileSpriteData& Tile = m_aTiles[y*m_vSize.x + x];
 
 			for (unsigned int slot = 0; slot < g_aSlotRenderOrder[m_nRotation].size(); ++slot)
 			{
@@ -87,22 +87,22 @@ void CTiledMap::Render()
 
 }
 
-void CTiledMap::HandleEvents()
+void CTiledMapRenderer::HandleEvents()
 {
 }
 
-void CTiledMap::AddSprite(IntVec vTile, STileData::ETileSpriteSlot eSlot, SSpriteData Sprite)
+void CTiledMapRenderer::AddSprite(IntVec vTile, STileSpriteData::ETileSpriteSlot eSlot, SSpriteData Sprite)
 {
 	auto& aTiles = GetTileData(vTile);
 	aTiles.m_aSprites[eSlot].push_back(Sprite);
 }
 
-STileData& CTiledMap::GetTileData(IntVec vPos)
+STileSpriteData& CTiledMapRenderer::GetTileData(IntVec vPos)
 {
 	return m_aTiles[vPos.y * m_vSize.x + vPos.x];
 }
 
-void CTiledMap::UpdateMovement()
+void CTiledMapRenderer::UpdateMovement()
 {
 	int nDir = -1;
 	if (Input::GetKey(KEY_LEFT).active || Input::GetMousePos().x < 10)
@@ -153,13 +153,13 @@ void CTiledMap::UpdateMovement()
 	}
 }
 
-void CTiledMap::SetCamera(IntVec vPos, int nRotation)
+void CTiledMapRenderer::SetCamera(IntVec vPos, int nRotation)
 {
 	m_vCameraPos = vPos;
 	m_nRotation = nRotation;
 }
 
-IntVec CTiledMap::GetTileScreenCoord(IntVec vPos) const
+IntVec CTiledMapRenderer::GetTileScreenCoord(IntVec vPos) const
 {
 	IntVec vOut;
 	switch (m_nRotation)
@@ -174,7 +174,7 @@ IntVec CTiledMap::GetTileScreenCoord(IntVec vPos) const
 	}
 }
 
-IntVec CTiledMap::GetTileScreenCoordPixel(IntVec vPos) const
+IntVec CTiledMapRenderer::GetTileScreenCoordPixel(IntVec vPos) const
 {
 	Vec vOut;
 	switch (m_nRotation)
@@ -186,5 +186,146 @@ IntVec CTiledMap::GetTileScreenCoordPixel(IntVec vPos) const
 	default:
 		assert(0);
 		return Vec();
+	}
+}
+
+void CTiledMap::SetSize(IntVec vSize)
+{
+	m_vSize = vSize;
+	m_aTiles.resize(m_vSize.x*m_vSize.y);
+	m_Renderer.SetSize(vSize);
+}
+
+STileData & CTiledMap::GetTileData(IntVec vPos)
+{
+	if (vPos.x < 0 || vPos.x >= m_vSize.x || vPos.y < 0 || vPos.y >= m_vSize.y) throw(0);
+	return m_aTiles[vPos.y * m_vSize.x + vPos.x];
+}
+
+
+#include <random>
+void CTiledMap::InitTestMap()
+{
+	std::random_device r;
+	std::default_random_engine e1(r());
+	std::uniform_int_distribution<int> random_4(0, 3);
+
+	IntVec vMapSize = { 10,10 };
+	SetSize(vMapSize);
+
+	for (int y = 0; y < vMapSize.y; ++y)
+	{
+		for (int x = 0; x < vMapSize.x; ++x)
+		{
+			int nHeight = std::max(0,random_4(e1) + 1);
+			GetTileData({ x,y }).m_nHeigth = nHeight;
+
+			std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
+			pSprite->SetTexture(CTexture::GetTexture(x % 4 == 0 ? "tile2" : "tile"));
+			pSprite->SetSize({ 64,32 });
+			m_Renderer.AddSprite({ x,y }, STileSpriteData::Ground, { pSprite, nHeight * 16 });
+			
+			if (random_4(e1) == 0)
+			{
+				std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
+				pSprite->SetTexture(CTexture::GetTexture("tree"));
+				pSprite->SetSize({ 64,64 });
+				m_Renderer.AddSprite({ x,y }, STileSpriteData::Object, { pSprite, 32 + nHeight * 16, random_4(e1) });
+			}
+			else if (random_4(e1) == 0)
+			{
+				std::vector<std::shared_ptr<CSprite>> aSprites;
+				for (int i = 0; i < 4; ++i)
+				{
+					std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
+					pSprite->SetTexture(CTexture::GetTexture(std::string("box") + std::to_string(i)));
+					pSprite->SetSize({ 64,64 });
+					aSprites.push_back(pSprite);
+				}
+				m_Renderer.AddSprite({ x,y }, STileSpriteData::Object, { aSprites, 32 + nHeight * 16, random_4(e1) });
+			}
+
+			if (random_4(e1) == 0)
+			{
+				std::vector<std::shared_ptr<CSprite>> aSprites;
+				for (int i = 0; i < 4; ++i)
+				{
+					std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
+					pSprite->SetTexture(CTexture::GetTexture(std::string("fence") + std::to_string(i)));
+					pSprite->SetSize({ 64,48 });
+					aSprites.push_back(pSprite);
+				}
+				int nSide = random_4(e1);
+				m_Renderer.AddSprite({ x,y }, (STileSpriteData::ETileSpriteSlot) ((int)STileSpriteData::Side0 + nSide), { aSprites, 16 + nHeight * 16, nSide });
+			}
+			
+		}
+	}
+
+	for (int y = 0; y < vMapSize.y; ++y)
+	{
+		for (int x = 0; x < vMapSize.x; ++x)
+		{
+			UpdateTerrainSprites({ x,y });
+		}
+	}
+	
+
+	
+}
+
+
+int CTiledMap::GetHeight(IntVec vPos)
+{
+	if (vPos.x < 0 || vPos.x >= m_vSize.x || vPos.y < 0 || vPos.y >= m_vSize.y) return 0;
+	return m_aTiles[vPos.y * m_vSize.x + vPos.x].m_nHeigth;
+}
+
+void CTiledMap::UpdateTerrainSprites(IntVec vPos)
+{
+	STileData& Data = GetTileData(vPos);
+	STileSpriteData& SpriteData = m_Renderer.GetTileData(vPos);
+
+	IntVec vNeighbour;
+	std::vector<std::string> sTex;
+	for (int i = 0; i < 4; ++i)
+	{
+		SpriteData.m_aSprites[STileSpriteData::Cliff0 + i].clear();
+		vNeighbour = vPos;
+		switch (i)
+		{
+		case 0: 
+			vNeighbour.y--;
+			sTex = { "","wall_right","wall_left","" };
+			break;
+		case 1:
+			vNeighbour.x++;
+			sTex = { "wall_right","wall_left", "", "" };
+			break;
+		case 2:
+			vNeighbour.y++;
+			sTex = { "wall_left", "", "", "wall_right" };
+			break;
+		case 3:
+			vNeighbour.x--;
+			sTex = { "", "","wall_right","wall_left" };
+			break;
+		}
+
+		int nHeight = GetHeight(vNeighbour);
+		for (int j = nHeight; j < Data.m_nHeigth; ++j)
+		{
+			std::vector<std::shared_ptr<CSprite>> aSprites;
+			for (int k = 0; k < 4; ++k)
+			{
+				std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
+				pSprite->SetTexture(CTexture::GetTexture(sTex[k]));
+				pSprite->SetSize({ 64,32 });
+				aSprites.push_back(pSprite);
+			}
+			SpriteData.m_aSprites[STileSpriteData::Cliff0 + i].push_back({
+				aSprites, j * 16, 0
+			});
+		}
 	}
 }
