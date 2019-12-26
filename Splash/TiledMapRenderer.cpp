@@ -64,6 +64,8 @@ void CTiledMapRenderer::Render()
 		break;	
 	}
 
+	m_aSpritesUnderCursor.clear();
+
 	for (int y = nFromY; y != nToY; y += nIncY)
 	{
 		for (int x = nFromX; x != nToX; x += nIncX)
@@ -77,7 +79,20 @@ void CTiledMapRenderer::Render()
 				{
 					Vec vRenderPos = GetTileScreenCoordPixel(IntVec(x * nTilePixels, y * nTilePixels) - m_vCameraPos) + m_Rect.GetSize() / 2;
 					vRenderPos.y -= aTiles[i].m_nHeight;
-					aTiles[i].m_aSprites[(m_nRotation + aTiles[i].m_nRotation) % (aTiles[i].m_aSprites.size())]->Render(*this, vRenderPos);
+					std::shared_ptr<CSprite> pSprite = aTiles[i].m_aSprites[(m_nRotation + aTiles[i].m_nRotation) % (aTiles[i].m_aSprites.size())];
+					pSprite->Render(*this, vRenderPos);
+
+					IntRect Rect;
+					Rect.SetPos(vRenderPos);
+					Rect.SetSize(pSprite->GetSize());
+					if (Rect.IsInside(Input::GetMousePos()))
+					{
+						SSpriteBinding Binding;
+						Binding.m_vPos = { x,y };
+						Binding.m_pSprite = pSprite;
+						m_aSpritesUnderCursor.push_back(Binding);
+					}
+					
 				}
 			}
 
@@ -104,6 +119,30 @@ STileSpriteData& CTiledMapRenderer::GetTileData(IntVec vPos)
 
 void CTiledMapRenderer::UpdateMovement()
 {
+	//if (Input::GetKey(MOUSE_RIGHT).pressed)
+	{
+		if (m_vSelectorPos != IntVec(-1, -1))
+		{
+			GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground].pop_back();
+		}
+
+		if (m_aSpritesUnderCursor.size() > 0)
+		{
+			m_vSelectorPos = m_aSpritesUnderCursor[m_aSpritesUnderCursor.size() - 1].m_vPos;
+
+			std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
+			pSprite->SetTexture(CTexture::GetTexture("selector"));
+			pSprite->SetSize({ 64,64 });
+
+			int nHeight = GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground][0].m_nHeight;
+			GetTileData(m_vSelectorPos).m_aSprites[STileSpriteData::Ground].push_back({ pSprite, nHeight });
+		}
+		else
+		{
+			m_vSelectorPos = { -1,-1 };
+		}
+	}
+
 	int nDir = -1;
 	if (Input::GetKey(KEY_LEFT).active || Input::GetMousePos().x < 10)
 	{
@@ -147,7 +186,7 @@ void CTiledMapRenderer::UpdateMovement()
 
 	
 
-	if (Input::GetKey(MOUSE_LEFT).pressed)
+	if (Input::GetKey(MOUSE_RIGHT).pressed)
 	{
 		m_nRotation = (m_nRotation + 1) % 4;
 	}
@@ -210,20 +249,91 @@ void CTiledMap::InitTestMap()
 	std::default_random_engine e1(r());
 	std::uniform_int_distribution<int> random_4(0, 3);
 
-	IntVec vMapSize = { 10,10 };
+	IntVec vMapSize = { 20,20 };
 	SetSize(vMapSize);
 
 	for (int y = 0; y < vMapSize.y; ++y)
 	{
 		for (int x = 0; x < vMapSize.x; ++x)
 		{
-			int nHeight = std::max(0,random_4(e1) + 1);
-			GetTileData({ x,y }).m_nHeigth = nHeight;
+			STileData& Tile = GetTileData({ x,y });
 
-			std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
-			pSprite->SetTexture(CTexture::GetTexture(x % 4 == 0 ? "tile2" : "tile"));
-			pSprite->SetSize({ 64,32 });
-			m_Renderer.AddSprite({ x,y }, STileSpriteData::Ground, { pSprite, nHeight * 16 });
+			int nHeight = 3;
+			if (x <= 4 && x>=2 && y >= 2 && y<= 4)
+			{
+				Tile.m_nHeigth = 2;
+				Tile.m_aHeights[0] = nHeight;
+				Tile.m_aHeights[1] = nHeight;
+				Tile.m_aHeights[2] = nHeight;
+				Tile.m_aHeights[3] = nHeight;
+			}
+			else
+			{
+				Tile.m_nHeigth = nHeight;
+				Tile.m_aHeights[0] = nHeight;
+				Tile.m_aHeights[1] = nHeight;
+				Tile.m_aHeights[2] = nHeight;
+				Tile.m_aHeights[3] = nHeight;
+			}
+			
+
+			if (x == 2)
+			{
+				if (y == 2)
+				{
+					Tile.m_aHeights[2] = 2;
+					Tile.m_nHeigth = nHeight;
+				}
+				if (y == 3)
+				{
+					Tile.m_aHeights[1] = 2;
+					Tile.m_aHeights[2] = 2;
+				}
+				if (y == 4)
+				{
+					Tile.m_aHeights[1] = 2;
+					Tile.m_nHeigth = nHeight;
+				}
+			}
+			if (x == 3)
+			{
+				if (y == 2)
+				{
+					Tile.m_aHeights[2] = 2;
+					Tile.m_aHeights[3] = 2;
+				}
+				if (y == 3)
+				{
+					Tile.m_aHeights[0] = 2;
+					Tile.m_aHeights[1] = 2;
+					Tile.m_aHeights[2] = 2;
+					Tile.m_aHeights[3] = 2;
+				}
+				if (y == 4)
+				{
+					Tile.m_aHeights[0] = 2;
+					Tile.m_aHeights[1] = 2;
+				}
+			}
+			if (x == 4)
+			{
+				if (y == 2)
+				{
+					Tile.m_aHeights[3] = 2;
+					Tile.m_nHeigth = nHeight;
+				}
+				if (y == 3)
+				{
+					Tile.m_aHeights[0] = 2;
+					Tile.m_aHeights[3] = 2;
+				}
+				if (y == 4)
+				{
+					Tile.m_aHeights[0] = 2;
+					Tile.m_nHeigth = nHeight;
+				}
+			}
+
 			
 			if (random_4(e1) == 0)
 			{
@@ -232,6 +342,7 @@ void CTiledMap::InitTestMap()
 				pSprite->SetSize({ 64,64 });
 				m_Renderer.AddSprite({ x,y }, STileSpriteData::Object, { pSprite, 32 + nHeight * 16, random_4(e1) });
 			}
+			/*
 			else if (random_4(e1) == 0)
 			{
 				std::vector<std::shared_ptr<CSprite>> aSprites;
@@ -258,7 +369,7 @@ void CTiledMap::InitTestMap()
 				int nSide = random_4(e1);
 				m_Renderer.AddSprite({ x,y }, (STileSpriteData::ETileSpriteSlot) ((int)STileSpriteData::Side0 + nSide), { aSprites, 16 + nHeight * 16, nSide });
 			}
-			
+			*/
 		}
 	}
 
@@ -285,6 +396,95 @@ void CTiledMap::UpdateTerrainSprites(IntVec vPos)
 {
 	STileData& Data = GetTileData(vPos);
 	STileSpriteData& SpriteData = m_Renderer.GetTileData(vPos);
+
+	//maga a terep
+
+	unsigned char flags = 0x00000000;
+	unsigned char nLow = 0, nHigh = 0;
+	//0-3 bit: is lower, 4-7 bit is higher
+	for (int i = 0; i < 4; ++i)
+	{
+		if (Data.m_aHeights[i] > Data.m_nHeigth)
+		{
+			flags |= (char)1 << (7 - (i + 4)); 
+			nHigh++;
+		}
+		else if (Data.m_aHeights[i] < Data.m_nHeigth)
+		{
+			flags |= (char)1 << (7 - i);
+			nLow++;
+		}
+	}
+
+
+	static std::vector<STextureRef> aFlatTex = { CTexture::GetTexture("tiles/0001") };
+	static std::vector<STextureRef> aOneDownTex = { 
+		CTexture::GetTexture("tiles/0003"),
+		CTexture::GetTexture("tiles/0004"),
+		CTexture::GetTexture("tiles/0005"),
+		CTexture::GetTexture("tiles/0002") };
+	static std::vector<STextureRef> aOneDownOneUpTex = {
+		CTexture::GetTexture("tiles/0013"),
+		CTexture::GetTexture("tiles/0010"),
+		CTexture::GetTexture("tiles/0011"),
+		CTexture::GetTexture("tiles/0012") };
+	static std::vector<STextureRef> aOneUpTex = {
+		CTexture::GetTexture("tiles/0007"),
+		CTexture::GetTexture("tiles/0008"),
+		CTexture::GetTexture("tiles/0009"),
+		CTexture::GetTexture("tiles/0006") };
+	static std::vector<STextureRef> aSlideTex = {
+		CTexture::GetTexture("tiles/0015"),
+		CTexture::GetTexture("tiles/0016"),
+		CTexture::GetTexture("tiles/0017"),
+		CTexture::GetTexture("tiles/0014") };
+	static std::vector<STextureRef> aValleyTex = {
+		CTexture::GetTexture("tiles/0018"),
+		CTexture::GetTexture("tiles/0019") };
+
+	std::vector<STextureRef>* pTextures = nullptr;
+	int nRot = 0;
+	
+	switch (flags)
+	{
+	case 0b00000000: pTextures = &aFlatTex; nRot = 0; break;
+	case 0b00001000: pTextures = &aOneUpTex; nRot = 0; break;
+	case 0b00000100: pTextures = &aOneUpTex; nRot = 1; break;
+	case 0b00000010: pTextures = &aOneUpTex; nRot = 2; break;
+	case 0b00000001: pTextures = &aOneUpTex; nRot = 3; break;
+	case 0b00001100: pTextures = &aSlideTex; nRot = 0; break;
+	case 0b00000110: pTextures = &aSlideTex; nRot = 1; break;
+	case 0b00000011: pTextures = &aSlideTex; nRot = 2; break;
+	case 0b00001001: pTextures = &aSlideTex; nRot = 3; break;
+	case 0b00001010: pTextures = &aValleyTex; nRot = 0; break;
+	case 0b00000101: pTextures = &aValleyTex; nRot = 1; break;
+	case 0b10000000: pTextures = &aOneDownTex; nRot = 0; break;
+	case 0b01000000: pTextures = &aOneDownTex; nRot = 1; break;
+	case 0b00100000: pTextures = &aOneDownTex; nRot = 2; break;
+	case 0b00010000: pTextures = &aOneDownTex; nRot = 3; break;
+	case 0b10000010: pTextures = &aOneDownOneUpTex; nRot = 0; break;
+	case 0b01000001: pTextures = &aOneDownOneUpTex; nRot = 1; break;
+	case 0b00101000: pTextures = &aOneDownOneUpTex; nRot = 2; break;
+	case 0b00010100: pTextures = &aOneDownOneUpTex; nRot = 3; break;
+	}
+
+	if (pTextures)
+	{
+		std::vector<std::shared_ptr<CSprite>> aSprites;
+		for (unsigned int i = 0; i < pTextures->size(); ++i)
+		{
+			std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
+			pSprite->SetTexture((*pTextures)[i]);
+			pSprite->SetSize({ 64,64 });
+			aSprites.push_back(pSprite);
+		}
+		SpriteData.m_aSprites[STileSpriteData::Ground].push_back({ aSprites, Data.m_nHeigth * 16 + 16, nRot });
+
+	}
+	
+
+
+	//a cliff
 
 	IntVec vNeighbour;
 	std::vector<std::string> sTex;

@@ -126,6 +126,11 @@ public:
 		return x == other.x && y == other.y;
 	}
 
+	bool operator!=(const IntVec& other) const
+	{
+		return x != other.x || y != other.y;
+	}
+
 	void operator+=(const IntVec& other)
 	{
 		x += other.x;
@@ -205,7 +210,8 @@ public:
 	void SetPos(const IntVec& pos) { m_vPos = pos; }
 	void SetSize(const IntVec& size) { m_vSize = size; }
 
-	bool HasIntersection(const IntRect& other);
+	bool HasIntersection(const IntRect& other) const;
+	bool IsInside(IntVec pos) const;
 
 	operator SDL_Rect() const;
 	IntRect(const SDL_Rect& rect);

@@ -75,6 +75,14 @@ private:
 	IntVec m_vTileSize = { 32,16 };
 	IntVec m_vTileSizePixel = { 2,1 };
 	int nTilePixels = 16;
+
+	struct SSpriteBinding
+	{
+		IntVec m_vPos;
+		std::weak_ptr<CSprite> m_pSprite;
+	};
+	std::vector<SSpriteBinding> m_aSpritesUnderCursor;
+	IntVec m_vSelectorPos = { -1,-1 };
 };
 
 

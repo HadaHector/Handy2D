@@ -41,7 +41,7 @@ IntRect::IntRect(const SDL_Rect& rect)
 	m_vSize.y = rect.h;
 }
 
-bool IntRect::HasIntersection(const IntRect& other)
+bool IntRect::HasIntersection(const IntRect& other) const
 {
 	int Amin = m_vPos.x;
 	int Amax = m_vPos.x + m_vSize.x;
@@ -67,4 +67,10 @@ bool IntRect::HasIntersection(const IntRect& other)
 		return false;
 
 	return true;
+}
+
+bool IntRect::IsInside(IntVec vPos) const
+{
+	IntVec vTrans = vPos - m_vPos;
+	return (vTrans.x >= 0 && vTrans.y >= 0 && vTrans.x <= m_vSize.x && vTrans.y <= m_vSize.y);
 }
