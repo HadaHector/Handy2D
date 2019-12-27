@@ -213,6 +213,8 @@ public:
 	bool HasIntersection(const IntRect& other) const;
 	bool IsInside(IntVec pos) const;
 
+	void Expand(int nAmount);
+
 	operator SDL_Rect() const;
 	IntRect(const SDL_Rect& rect);
 

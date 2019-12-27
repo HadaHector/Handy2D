@@ -74,3 +74,11 @@ bool IntRect::IsInside(IntVec vPos) const
 	IntVec vTrans = vPos - m_vPos;
 	return (vTrans.x >= 0 && vTrans.y >= 0 && vTrans.x <= m_vSize.x && vTrans.y <= m_vSize.y);
 }
+
+void IntRect::Expand(int nAmount)
+{
+	m_vPos.x -= nAmount;
+	m_vPos.y -= nAmount;
+	m_vSize.x += nAmount * 2;
+	m_vSize.y += nAmount * 2;
+}

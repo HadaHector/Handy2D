@@ -426,6 +426,21 @@ int CTiledMap::GetHeight(IntVec vPos)
 	return m_aTiles[vPos.y * m_vSize.x + vPos.x].m_nHeigth;
 }
 
+void CTiledMap::UpdateTerrainSprites(IntRect vArea)
+{
+	for (int y = 0; y < vArea.GetSize().y; ++y)
+	{
+		for (int x = 0; x < vArea.GetSize().x; ++x)
+		{
+			IntVec vPos = vArea.GetUpperLeft();
+			vPos.x += x;
+			vPos.y += y;
+			if (vPos.x < 0 || vPos.x >= m_vSize.x || vPos.y < 0 || vPos.y >= m_vSize.y) continue;
+			UpdateTerrainSprites(vPos);
+		}
+	}
+}
+
 void CTiledMap::UpdateTerrainSprites(IntVec vPos)
 {
 	STileData& Data = GetTileData(vPos);
@@ -573,12 +588,16 @@ void CTiledMap::Update()
 	{
 		if (m_Renderer.GetSelectorPos() != IntVec(-1, -1))
 		{
-			GetTileData(m_Renderer.GetSelectorPos()).m_nHeigth++;
+			GetTileData(m_Renderer.GetSelectorPos()).m_nHeigth--;
 			for (int i = 0; i < 4; ++i)
 			{
-				GetTileData(m_Renderer.GetSelectorPos()).m_aHeights[i]++;
+				GetTileData(m_Renderer.GetSelectorPos()).m_aHeights[i]--;
 			}
-			UpdateTerrainSprites(m_Renderer.GetSelectorPos());			
+			IntRect Rect;
+			Rect.SetPos(m_Renderer.GetSelectorPos());
+			Rect.SetSize({ 1,1 });
+			Rect.Expand(1);
+			UpdateTerrainSprites(Rect);
 		}
 	}
 }

@@ -112,6 +112,7 @@ public:
 
 	void InitTestMap();
 	void UpdateTerrainSprites(IntVec vPos);
+	void UpdateTerrainSprites(IntRect vArea);
 	void Update();
 
 private:
