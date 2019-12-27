@@ -122,7 +122,7 @@ void CGuiImage::SetImage(const std::string& sPath)
 {
 	m_sImagePath = sPath;
 	m_pSprite = std::make_shared<CImageSprite>();
-	m_pSprite->SetTexture(CTexture::GetTexture(sPath));
+	m_pSprite->SetTexture(CTexture::LoadTexture(sPath));
 	m_eValid = EUnknown;
 }
 

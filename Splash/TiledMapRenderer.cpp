@@ -589,21 +589,36 @@ void CTiledMap::Update()
 	{
 		if (m_Renderer.GetSelectorPos() != IntVec(-1, -1))
 		{
-			CreateObject(m_pAssetToBuild, m_Renderer.GetSelectorPos());
-
-
-			/*
-			GetTileData(m_Renderer.GetSelectorPos()).m_nHeigth--;
-			for (int i = 0; i < 4; ++i)
+			if (m_eMode == EInteraction_ObjectBuild)
 			{
-				GetTileData(m_Renderer.GetSelectorPos()).m_aHeights[i]--;
+				CreateObject(m_pAssetToBuild, m_Renderer.GetSelectorPos());
 			}
-			IntRect Rect;
-			Rect.SetPos(m_Renderer.GetSelectorPos());
-			Rect.SetSize({ 1,1 });
-			Rect.Expand(1);
-			UpdateTerrainSprites(Rect);
-			*/
+			if (m_eMode == EInteraction_TerrainUp)
+			{
+				GetTileData(m_Renderer.GetSelectorPos()).m_nHeigth++;
+				for (int i = 0; i < 4; ++i)
+				{
+					GetTileData(m_Renderer.GetSelectorPos()).m_aHeights[i]++;
+				}
+				IntRect Rect;
+				Rect.SetPos(m_Renderer.GetSelectorPos());
+				Rect.SetSize({ 1,1 });
+				Rect.Expand(1);
+				UpdateTerrainSprites(Rect);
+			}
+			if (m_eMode == EInteraction_TerrainDown)
+			{
+				GetTileData(m_Renderer.GetSelectorPos()).m_nHeigth--;
+				for (int i = 0; i < 4; ++i)
+				{
+					GetTileData(m_Renderer.GetSelectorPos()).m_aHeights[i]--;
+				}
+				IntRect Rect;
+				Rect.SetPos(m_Renderer.GetSelectorPos());
+				Rect.SetSize({ 1,1 });
+				Rect.Expand(1);
+				UpdateTerrainSprites(Rect);
+			}
 		}
 	}
 }
@@ -630,4 +645,9 @@ void CTiledMap::CreateObject(const CAsset* pAsset, IntVec vPos, int nRotation, i
 void CTiledMap::SetObjectToBuild(const CAsset* pAsset)
 {
 	m_pAssetToBuild = pAsset;
+}
+
+void CTiledMap::SetInteractionMode(EInteractionMode eMode)
+{
+	m_eMode = eMode;
 }

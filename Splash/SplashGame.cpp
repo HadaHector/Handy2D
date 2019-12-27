@@ -94,6 +94,39 @@ bool CSplashGame::Load()
 	pGui = new CGuiLayer(IntRect(0, 0, 1024, 512));
 	SDLManager::Instance.AddLayer(pGui);
 
+	{
+		std::shared_ptr<CGuiImage> pTerrainUpButton = PNEW(CGuiImage);
+		pTerrainUpButton->SetImage("resources/gui/terrain_move_up.png");
+		pTerrainUpButton->AddClickEventListener([&](SClickEvent& Event) {
+			m_pTiledMap->SetInteractionMode(EInteraction_TerrainUp);
+		});
+		pTerrainUpButton->SetSize({ 32,32 });
+		pTerrainUpButton->SetPosition({ 0,0 });
+		pGui->GetRootElement()->AddChild(pTerrainUpButton);
+	}
+
+	{
+		std::shared_ptr<CGuiImage> pTerrainDownButton = PNEW(CGuiImage);
+		pTerrainDownButton->SetImage("resources/gui/terrain_move_down.png");
+		pTerrainDownButton->AddClickEventListener([&](SClickEvent& Event) {
+			m_pTiledMap->SetInteractionMode(EInteraction_TerrainDown);
+		});
+		pTerrainDownButton->SetSize({ 32,32 });
+		pTerrainDownButton->SetPosition({ 32,0 });
+		pGui->GetRootElement()->AddChild(pTerrainDownButton);
+	}
+
+	{
+		std::shared_ptr<CGuiImage> pPlantButton = PNEW(CGuiImage);
+		pPlantButton->SetImage("resources/gui/build_plant.png");
+		pPlantButton->AddClickEventListener([&](SClickEvent& Event) {
+			m_pTiledMap->SetInteractionMode(EInteraction_ObjectBuild);
+		});
+		pPlantButton->SetSize({ 32,32 });
+		pPlantButton->SetPosition({ 64,0 });
+		pGui->GetRootElement()->AddChild(pPlantButton);
+	}
+
 	return true;
 }
 

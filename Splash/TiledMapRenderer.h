@@ -97,6 +97,14 @@ struct STileData
 	int m_aHeights[4];
 };
 
+enum EInteractionMode
+{
+	EInteraction_Select,
+	EInteraction_TerrainUp,
+	EInteraction_TerrainDown,
+	EInteraction_ObjectBuild
+};
+
 class CAsset;
 
 class CTiledMap 
@@ -120,8 +128,11 @@ public:
 	void CreateObject(const CAsset* pAsset, IntVec vPos, int nRotation = 0, int nHeight = -1);
 	void SetObjectToBuild(const CAsset* pAsset);
 
+	void SetInteractionMode(EInteractionMode eMode);
+
 private:
 	IntVec m_vSize;
 	std::vector<STileData> m_aTiles;
 	const CAsset* m_pAssetToBuild;
+	EInteractionMode m_eMode = EInteraction_Select;
 };
