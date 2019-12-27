@@ -97,6 +97,8 @@ struct STileData
 	int m_aHeights[4];
 };
 
+class CAsset;
+
 class CTiledMap 
 {
 public:
@@ -115,7 +117,11 @@ public:
 	void UpdateTerrainSprites(IntRect vArea);
 	void Update();
 
+	void CreateObject(const CAsset* pAsset, IntVec vPos, int nRotation = 0, int nHeight = -1);
+	void SetObjectToBuild(const CAsset* pAsset);
+
 private:
 	IntVec m_vSize;
 	std::vector<STileData> m_aTiles;
+	const CAsset* m_pAssetToBuild;
 };

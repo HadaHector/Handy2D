@@ -185,6 +185,8 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Assets.cpp" />
+    <ClCompile Include="json11.cpp" />
     <ClCompile Include="Splash.cpp" />
     <ClCompile Include="SplashGame.cpp" />
     <ClCompile Include="TiledMapRenderer.cpp" />
@@ -195,6 +197,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Assets.h" />
+    <ClInclude Include="json11.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SplashGame.h" />
     <ClInclude Include="TiledMapRenderer.h" />

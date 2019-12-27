@@ -1,0 +1,11 @@
+{
+	"name":"tree",
+	"buildprice": 10,
+	"destroyprice": 3,
+	"spritedata": "lol",
+	"spriteheight": 32,
+	"spriteslot":"object",
+	"sprites": [
+		"resources/tree.png"
+	]	
+}

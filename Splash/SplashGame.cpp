@@ -13,6 +13,7 @@
 #include "PaintedImage.h"
 #include "Audio.h"
 #include "TiledMapRenderer.h"
+#include "Assets.h"
 
 const double PI = 3.141592653589793238463;
 
@@ -35,9 +36,11 @@ bool CSplashGame::Load()
 {
 	Time::target_fps = 120;
 
+	m_pAssetManager = new CAssetManager();
+	m_pAssetManager->LoadAssetFile("assets/tree.json");
+
 	SDLManager::SetClearColor(0, 0, 0, 1);
 	
-	CTexture::LoadTexture("resources/tree.png", "tree", true);
 	CTexture::LoadTexture("resources/wall_left.png", "wall_left", true);
 	CTexture::LoadTexture("resources/wall_right.png","wall_right", true);
 	CTexture::LoadTexture("resources/box0.png", "box0");
@@ -86,6 +89,7 @@ bool CSplashGame::Load()
 	m_pTiledMap->m_Renderer.SetCamera({ 0,0 }, 0);
 
 	m_pTiledMap->InitTestMap();
+	m_pTiledMap->SetObjectToBuild(m_pAssetManager->GetAsset("tree"));
 
 	pGui = new CGuiLayer(IntRect(0, 0, 1024, 512));
 	SDLManager::Instance.AddLayer(pGui);

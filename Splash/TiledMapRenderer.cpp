@@ -2,6 +2,7 @@
 #include "Input.h"
 #include <cassert>
 #include "SplashGame.h"
+#include "Assets.h"
 
 namespace
 {
@@ -372,7 +373,7 @@ void CTiledMap::InitTestMap()
 			if (random_4(e1) == 0)
 			{
 				std::shared_ptr<CImageSprite> pSprite = std::make_shared<CImageSprite>();
-				pSprite->SetTexture(CTexture::GetTexture("tree"));
+				pSprite->SetTexture(CTexture::GetTexture("resources/tree.png"));
 				pSprite->SetSize({ 64,64 });
 				m_Renderer.AddSprite({ x,y }, STileSpriteData::Object, { pSprite, 32 + nHeight * 16, random_4(e1) });
 			}
@@ -588,6 +589,10 @@ void CTiledMap::Update()
 	{
 		if (m_Renderer.GetSelectorPos() != IntVec(-1, -1))
 		{
+			CreateObject(m_pAssetToBuild, m_Renderer.GetSelectorPos());
+
+
+			/*
 			GetTileData(m_Renderer.GetSelectorPos()).m_nHeigth--;
 			for (int i = 0; i < 4; ++i)
 			{
@@ -598,6 +603,31 @@ void CTiledMap::Update()
 			Rect.SetSize({ 1,1 });
 			Rect.Expand(1);
 			UpdateTerrainSprites(Rect);
+			*/
 		}
 	}
+}
+
+void CTiledMap::CreateObject(const CAsset* pAsset, IntVec vPos, int nRotation, int nHeight)
+{
+	if (!pAsset) return;
+
+	if (nHeight == -1)
+	{
+		nHeight = GetHeight(vPos) * 16;
+	}
+
+	if (pAsset->GetSpriteSlot() == STileSpriteData::Object)
+	{
+		SSpriteData Data = pAsset->GetSpriteData();
+		Data.m_nHeight += nHeight;
+		Data.m_nRotation = nRotation;
+		m_Renderer.AddSprite(vPos, STileSpriteData::Object, Data);
+	}
+	//todo else others
+}
+
+void CTiledMap::SetObjectToBuild(const CAsset* pAsset)
+{
+	m_pAssetToBuild = pAsset;
 }

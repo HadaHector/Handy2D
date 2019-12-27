@@ -24,6 +24,8 @@ class CSplashGame : public CGameLogic
 
 	PGuiElement pMenu;
 
+	class CAssetManager* m_pAssetManager;
+
 public:
 	CSplashGame() { m_pInstance = this; }
 	virtual bool Load() override;
