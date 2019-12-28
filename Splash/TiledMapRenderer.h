@@ -2,6 +2,7 @@
 #include "RenderLayer.h"
 #include <array>
 
+class CAsset;
 
 
 struct SSpriteData
@@ -46,6 +47,15 @@ struct STileSpriteData
 		LAST
 	};
 	std::array<std::vector<SSpriteData>, (int)ETileSpriteSlot::LAST> m_aSprites;
+};
+
+struct SGroundTileSet
+{
+	CAsset* m_pFlat;
+	CAsset* m_pOneDown;
+	CAsset* m_pOneUp;
+	CAsset* m_pUpAndDown;
+	CAsset* m_pUpAndUp;
 };
 
 class CTiledMapRenderer : public CRenderLayer
@@ -105,7 +115,6 @@ enum EInteractionMode
 	EInteraction_ObjectBuild
 };
 
-class CAsset;
 
 class CTiledMap 
 {

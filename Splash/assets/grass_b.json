@@ -1,0 +1,11 @@
+{
+	"name":"grass_b",
+	"spriteheight": 16,
+	"spriteslot":"ground",
+	"sprites": [
+		"resources/tiles/0003.png",
+		"resources/tiles/0004.png",
+		"resources/tiles/0005.png",
+		"resources/tiles/0002.png"
+	]	
+}
