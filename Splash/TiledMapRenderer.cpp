@@ -135,7 +135,7 @@ void CTiledMapRenderer::Update()
 
 		m_vSelectorPos = { -1,-1 };
 
-		if (m_aSpritesUnderCursor.size() > 0)
+		if (!CSplashGame::GetInstance()->IsCursorAboveGui() && m_aSpritesUnderCursor.size() > 0)
 		{
 			for (int i = m_aSpritesUnderCursor.size() - 1; i >= 0; --i)
 			{

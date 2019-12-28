@@ -16,7 +16,7 @@ class CSplashGame : public CGameLogic
 {
 	std::vector<PGuiImage> aImages;
 	std::shared_ptr<CGameObject> root;
-	CGuiLayer *pGui;
+	CGuiLayer *m_pGui;
 	class CTiledMap *m_pTiledMap;
 
 	bool m_bResized = false;
@@ -34,5 +34,7 @@ public:
 	virtual void Update() override;
 	virtual void OnResize() override;
 	static CSplashGame* GetInstance() { return m_pInstance; }
+
+	bool IsCursorAboveGui() const;
 };
 

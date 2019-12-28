@@ -68,13 +68,17 @@ void CGuiLayer::Render()
 
 void CGuiLayer::HandleEvents()
 {
+	m_bCursorAboveElement = false;
 	IntVec mouse = Input::GetMousePos(); 
 	for (int i=m_aRects.size()-1; i>=0; --i)
 	{
+		if (!m_aRects[i].element.lock()->IsClickable()) continue;
 		IntRect& rect = m_aRects[i].rect;
 		if (rect.GetUpperLeft().x <= mouse.x && rect.GetUpperLeft().y <= mouse.y &&
 			rect.GetBottomRight().x >= mouse.x && rect.GetBottomRight().y >= mouse.y)
 		{
+			m_bCursorAboveElement = true;
+
 			int nButton = 0;
 			if (Input::GetKey(MOUSE_LEFT).released)
 			{
@@ -116,7 +120,10 @@ void CGuiLayer::AddRenderData(std::weak_ptr<CSprite> pSprite, WGuiElement pElem)
 }
 
 CGuiImage::CGuiImage() : CGuiElement(),
-	m_vUsedSize(-1, -1) {};
+	m_vUsedSize(-1, -1) 
+{
+	m_bClickable = true;
+};
 
 void CGuiImage::SetImage(const std::string& sPath)
 {

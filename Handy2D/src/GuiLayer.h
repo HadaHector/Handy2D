@@ -60,10 +60,13 @@ public:
 	std::map<std::string, std::string>& Properties() { return m_mProperties; }
 	void SetVisible(bool bVis) { m_bVisible = bVis; }
 	bool IsVisible() const { return m_bVisible; }
+	bool IsClickable() const { return m_bClickable; }
+	void SetClickable(bool bOn) { m_bClickable = bOn; }
 protected:
 
 	std::vector<PGuiElement> m_aChildren;
 	bool m_bVisible = true;
+	bool m_bClickable = false;
 	IntVec m_vPosition;
 	IntVec m_vSize;
 
@@ -175,11 +178,15 @@ public:
 	virtual void HandleEvents() override;
 	void AddRenderData(std::weak_ptr<CSprite> pSprite, WGuiElement pElem);
 	PGuiElement GetRootElement() { return m_pRoot; }
+
+	bool IsCursorAboveElement() const { return m_bCursorAboveElement; }
 private:
 	PGuiElement m_pRoot;
 
 	std::vector<std::weak_ptr<CSprite>> m_aRenderArray;
 	std::vector<ElementRect> m_aRects;
+
+	bool m_bCursorAboveElement = false;
 };
 
 POINTER_TYPEDEFS(GuiLayer)

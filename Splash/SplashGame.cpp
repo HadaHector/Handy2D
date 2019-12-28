@@ -91,18 +91,19 @@ bool CSplashGame::Load()
 	m_pTiledMap->InitTestMap();
 	m_pTiledMap->SetObjectToBuild(m_pAssetManager->GetAsset("tree"));
 
-	pGui = new CGuiLayer(IntRect(0, 0, 1024, 512));
-	SDLManager::Instance.AddLayer(pGui);
+	m_pGui = new CGuiLayer(IntRect(0, 0, 1024, 512));
+	SDLManager::Instance.AddLayer(m_pGui);
 
 	{
 		std::shared_ptr<CGuiImage> pTerrainUpButton = PNEW(CGuiImage);
 		pTerrainUpButton->SetImage("resources/gui/terrain_move_up.png");
 		pTerrainUpButton->AddClickEventListener([&](SClickEvent& Event) {
 			m_pTiledMap->SetInteractionMode(EInteraction_TerrainUp);
+			Event.m_bPropagation = false;
 		});
 		pTerrainUpButton->SetSize({ 32,32 });
 		pTerrainUpButton->SetPosition({ 0,0 });
-		pGui->GetRootElement()->AddChild(pTerrainUpButton);
+		m_pGui->GetRootElement()->AddChild(pTerrainUpButton);
 	}
 
 	{
@@ -110,10 +111,11 @@ bool CSplashGame::Load()
 		pTerrainDownButton->SetImage("resources/gui/terrain_move_down.png");
 		pTerrainDownButton->AddClickEventListener([&](SClickEvent& Event) {
 			m_pTiledMap->SetInteractionMode(EInteraction_TerrainDown);
+			Event.m_bPropagation = false;
 		});
 		pTerrainDownButton->SetSize({ 32,32 });
 		pTerrainDownButton->SetPosition({ 32,0 });
-		pGui->GetRootElement()->AddChild(pTerrainDownButton);
+		m_pGui->GetRootElement()->AddChild(pTerrainDownButton);
 	}
 
 	{
@@ -121,10 +123,11 @@ bool CSplashGame::Load()
 		pPlantButton->SetImage("resources/gui/build_plant.png");
 		pPlantButton->AddClickEventListener([&](SClickEvent& Event) {
 			m_pTiledMap->SetInteractionMode(EInteraction_ObjectBuild);
+			Event.m_bPropagation = false;
 		});
 		pPlantButton->SetSize({ 32,32 });
 		pPlantButton->SetPosition({ 64,0 });
-		pGui->GetRootElement()->AddChild(pPlantButton);
+		m_pGui->GetRootElement()->AddChild(pPlantButton);
 	}
 
 	return true;
@@ -134,7 +137,7 @@ bool CSplashGame::Load()
 void CSplashGame::Resize()
 {
 	IntVec vWinSize = SDLManager::GetSize();
-	pGui->SetRect(IntRect(0, 0, vWinSize.x, vWinSize.y));
+	m_pGui->SetRect(IntRect(0, 0, vWinSize.x, vWinSize.y));
 	m_pTiledMap->m_Renderer.SetRect(IntRect(0, 0, vWinSize.x, vWinSize.y));
 	//pMenuBg->SetSize(vWinSize);
 	m_bResized = false;
@@ -163,4 +166,9 @@ void CSplashGame::UpdateGui()
 void CSplashGame::OnResize()
 {
 	m_bResized = true;
+}
+
+bool CSplashGame::IsCursorAboveGui() const
+{
+	return m_pGui->IsCursorAboveElement();
 }
