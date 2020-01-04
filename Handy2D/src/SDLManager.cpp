@@ -90,6 +90,7 @@ public:
 SDLManager SDLManager::Instance;
 int SDLManager::drawnum = 0;
 int SDLManager::spritenum = 0;
+unsigned char SDLManager::clearcolor[4] = { 0,0,0,0 };
 
 SDL_Renderer* SDLManager::GetRenderer() { return m_pRenderer; }
 
@@ -297,6 +298,7 @@ void SDLManager::RunFrame()
 
 	drawnum = 0;
 
+	SDL_SetRenderDrawColor(m_pRenderer, clearcolor[0], clearcolor[1], clearcolor[2], clearcolor[3]);
 	SDL_RenderClear(m_pRenderer);
 
 	for (auto&& Layer : m_aRenderLayers)

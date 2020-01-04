@@ -73,3 +73,12 @@ bool CSound::DelSound(const std::string& sName)
 	return true;
 }
 
+void CSound::CreateFromData(int allocated, unsigned char* abuf, unsigned int alen, unsigned char volume)
+{
+	m_pChunk = new Mix_Chunk();
+	m_pChunk->allocated = allocated;
+	m_pChunk->abuf = abuf;
+	m_pChunk->alen = alen;
+	m_pChunk->volume = volume;
+}
+

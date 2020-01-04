@@ -49,7 +49,7 @@ void SBall::Bounce()
 		CAudio::PlaySound(CSound::GetSound("resources/destroy.wav"));
 	}
 	m_nBounceCount++;
-	if (m_nBounceCount > 20)
+	if (m_nBounceCount > 15)
 	{
 		m_nVelocity = std::min(5, m_nVelocity + 1);
 		m_nBounceCount = 0;
@@ -61,7 +61,7 @@ void SBall::Bounce()
 void SBall::SetMaterial(EMaterial eMat)
 {
 	m_eMaterial = eMat;
-	m_nVelocity = 1;
+	m_nVelocity = 2;
 	m_nPrice = 5;
 	switch (eMat)
 	{
@@ -489,18 +489,21 @@ void CGame::Update()
 		else
 		{
 			//GAME OVER
-			auto pGame = CBreakoutGame::GetInstance();
-			pGame->WriteText("game over", 15, 12, EC64Color::black, EC64Color::white);
-			CAudio::PlaySound(CSound::GetSound("resources/loose.wav"));
-
-			SGameSave& Save = pGame->GetSave();
-			for (int i = 0; i < 6; ++i)
+			if (!m_bGameOver)
 			{
-				Save.m_aMaterials[i] = m_aCollectedMaterials[EM_WOOD + i];
-				Save.m_aBalls[i] = m_aBalls[EM_WOOD + i];
-				Save.m_aBats[i] = m_aBats[EM_WOOD+i];
+				auto pGame = CBreakoutGame::GetInstance();
+				pGame->WriteText("game over", 15, 12, EC64Color::black, EC64Color::white);
+				CAudio::PlaySound(CSound::GetSound("resources/loose.wav"));
+
+				SGameSave& Save = pGame->GetSave();
+				for (int i = 0; i < 6; ++i)
+				{
+					Save.m_aMaterials[i] = m_aCollectedMaterials[EM_WOOD + i];
+					Save.m_aBalls[i] = m_aBalls[EM_WOOD + i];
+					Save.m_aBats[i] = m_aBats[EM_WOOD + i];
+				}
+				pGame->Save();
 			}
-			pGame->Save();
 			
 			m_bGameOver = true;
 			
@@ -668,7 +671,7 @@ void CGame::UpdateBall()
 				//bat bounce
 				if (m_Bat.m_bVisible && m_vBallEnd.y == 24 * 8 - 1)
 				{
-					if (m_vBallEnd.x >= m_Bat.m_nPos && m_vBallEnd.x <= m_Bat.m_nPos + m_Bat.m_nWidth)
+					if (m_vBallEnd.x >= m_Bat.m_nPos && m_Ball.m_vPos.x <= m_Bat.m_nPos + m_Bat.m_nWidth)
 					{
 						m_Ball.m_vSpeed.y = -1;
 						m_Ball.Bounce();

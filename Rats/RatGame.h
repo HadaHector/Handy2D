@@ -8,6 +8,7 @@
 #include "GuiLayer.h"
 #include <stdlib.h>
 #include "CollisionManager.h"
+#include "Audio.h"
 
 
 #define MAP_SIZE_X 300
@@ -159,6 +160,8 @@ class CRatGame : public CGameLogic
 	double explosionTimer = -1;
 
 	PGuiElement pMenu;
+
+	std::shared_ptr<CSound> Sound;
 
 public:
 	CRatGame() { m_pInstance = this; }

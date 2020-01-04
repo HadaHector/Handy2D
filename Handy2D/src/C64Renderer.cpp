@@ -33,6 +33,7 @@ CC64RenderLayer::CC64RenderLayer(const IntRect & rect) :
 {
 	auto pImage = std::make_shared<CImageSprite>();
 	pImage->SetSize(rect.GetSize());
+	pImage->SetPos(rect.GetUpperLeft());
 	pImage->SetTexture(CTexture::GetTexture(m_sName));
 	m_pSprite = pImage;
 

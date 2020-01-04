@@ -11,3 +11,9 @@ void CAudio::AllocateChannels(int nCount)
 {
 	Mix_AllocateChannels(nCount);
 }
+
+void CAudio::SetVolume(int nChannel, int nVolume)
+{
+	Mix_Volume(nChannel, nVolume);
+}
+

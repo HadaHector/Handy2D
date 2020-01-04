@@ -40,6 +40,8 @@ public:
 	static int drawnum;
 	static int spritenum;
 
+	static unsigned char clearcolor[4];
+
 	struct SDL_Renderer* GetRenderer();
 	void AddLayer(CRenderLayer* pLayer);
 	std::list<CRenderLayer*>& GetRenderLayers() { return m_aRenderLayers; }

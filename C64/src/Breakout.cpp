@@ -36,7 +36,15 @@ bool CBreakoutGame::Load()
 	CSound::LoadSound("resources/nobuy.wav");
 	CSound::LoadSound("resources/destroy.wav");
 
-	m_pC64 = new CC64RenderLayer(IntRect(0, 0, 960, 600));
+	CSound::LoadSound("resources/Chiptronical.wav");
+
+	CAudio::PlaySound(CSound::GetSound("resources/Chiptronical.wav"),0);
+	CAudio::SetVolume(0, 64);
+
+	//320*200
+	IntVec Size = SDLManager::Instance.GetSize();
+	float ratio = Size.y / 200.0f;
+	m_pC64 = new CC64RenderLayer(IntRect((Size.x - ratio * 320)/2, 0, ratio * 320, Size.y));
 	SDLManager::Instance.AddLayer(m_pC64);
 
 	LoadSaves();

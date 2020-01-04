@@ -24,4 +24,5 @@ public:
 	static std::map<std::string, std::shared_ptr<CSound>> m_mStore;
 	static bool DelSound(const std::string& sName);
 	Mix_Chunk* GetChunk() { return m_pChunk; }
+	void CreateFromData(int allocated, unsigned char* abuf, unsigned int alen, unsigned char volume);
 };

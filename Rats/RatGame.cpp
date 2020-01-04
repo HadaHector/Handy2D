@@ -11,7 +11,6 @@
 #include "CollisionManager.h"
 #include <random>
 #include "PaintedImage.h"
-#include "Audio.h"
 
 const double PI = 3.141592653589793238463;
 
@@ -330,6 +329,7 @@ void CRat::Update()
 	if ((m_nPlayer ? (Input::GetKey(KEY_KP_ENTER).active || Input::GetKey(KEY_RETURN).active) : Input::GetKey(KEY_SPACE).active) && m_cooldown == 0)
 	{
 		Fire();
+
 		m_cooldown = 0.15;
 	}
 
@@ -506,6 +506,29 @@ bool CRatGame::Load()
 	CSound::LoadSound("resources/laser.wav");
 	CSound::LoadSound("resources/explosion.wav");
 	CSound::LoadSound("resources/hit.wav");
+
+
+
+	unsigned char* pChar = new unsigned char[1024 * 1024];
+	for (int i = 0; i < 1024 * 1024; i += 2)
+	{
+		//white noise
+		//pChar[i] = random_4(e1) * 64;
+
+		//sinus
+		//short n = 128 + (sin(i * 440.0f / 44100 / 3.1415f) * 60);
+
+		//square
+		int cycle = i % (44100 / 440);
+		short n = 128 + (cycle / (float) (44100 / 440)) > 0.5f ? 127 : -128;
+
+		pChar[i] = ((unsigned char*)&n)[1];
+		pChar[i+1] = ((unsigned char*)&n)[0];
+	}
+
+	Sound = std::make_shared<CSound>();
+	Sound->CreateFromData(1, pChar, 1024 * 1024, 128);
+	CAudio::PlaySound(Sound);
 
 	for (int x = -1; x < 3; ++x)
 	{
